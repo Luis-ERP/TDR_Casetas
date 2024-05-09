@@ -4,11 +4,12 @@ from casetas.models import Lugar, Caseta, Ruta, OrdenCaseta, Orden, UnidadTracto
 # Register your models here.
 @admin.register(Lugar)
 class LugarAdmin(admin.ModelAdmin):
-    list_display = ('nombre',)
+    list_display = ('nombre', 'nombre_id')
 
 @admin.register(Caseta)
 class CasetaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'costo', 'lugar')
+    search_fields = ('nombre', 'lugar__nombre')
 
 @admin.register(Ruta)
 class RutaAdmin(admin.ModelAdmin):
@@ -16,11 +17,13 @@ class RutaAdmin(admin.ModelAdmin):
 
 @admin.register(OrdenCaseta)
 class OrdenCasetaAdmin(admin.ModelAdmin):
-    list_display = ('fecha', 'caseta', 'orden', 'unidad')
+    list_display = ('fecha', 'caseta', 'orden', 'unidad', 'costo')
+    search_fields = ('caseta__nombre', 'orden__numero')
 
 @admin.register(Orden)
 class OrdenAdmin(admin.ModelAdmin):
     list_display = ('numero', 'fecha', 'fecha_inicio', 'fecha_fin', 'ruta', 'unidad')
+    search_fields = ('numero', 'ruta__nombre', 'unidad__tag')
 
 
 @admin.register(UnidadTractor)

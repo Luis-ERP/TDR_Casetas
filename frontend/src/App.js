@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Table, FormGroup, Input, Card, CardBody, Button, Form } from 'reactstrap';
+import { Container, Row, Col, Table, FormGroup, Input, Card, CardBody, Button, Form, CardHeader } from 'reactstrap';
 import './App.css';
 
 const data = {
-	'id': 1,
-	'number': '123456',
-	'tag': 'ERTKGMLGKML235235',
-	'origin': {
-		'id': 1,
-		'name': 'Bogota'
+	'id': 43,
+	'numero': '1336609',
+	'costo_total_esperado': 1007.0,
+	'unidad': {
+		'id': 262,
+		'tag': 'OHLM01632770',
+		'numero': 1846
 	},
-	'destination': {
+	'lugar_origen': {
+		'id': 1,
+		'name': 'Colgate Iturbide'
+	},
+	'lugar_destino': {
 		'id': 2,
-		'name': 'Medellin'
+		'name': 'Cedis Colgate Tultitlán'
 	},
 }
 
@@ -50,6 +55,13 @@ return (
 			<Col>
 				<Card>
 					<CardBody>
+						<Row className='mb-4'>
+							<Col>
+								<h4>
+									Información por orden
+								</h4>
+							</Col>
+						</Row>
 						<Form onSubmit={onSubmitSearchOrder}>
 							<Row>
 								<Col lg={1}>
@@ -71,27 +83,27 @@ return (
 									<tbody>
 										<tr>
 											<th>Orden</th>
-											<th>{order.number}</th>
+											<th>{order.numero}</th>
 										</tr>
 										<tr>
 											<th>Tag</th>
-											<td>{order.tag}</td>
+											<td>{order.unidad.tag}</td>
 										</tr>
 										<tr>
 											<th>Origen</th>
-											<td>{order.origin.name}</td>
+											<td>{order.lugar_origen.name}</td>
 										</tr>
 										<tr>
 											<th>Destino</th>
-											<td>{order.destination.name}</td>
+											<td>{order.lugar_destino.name}</td>
 										</tr>
 										<tr>
 											<th>Costo Total Esperado</th>
-											<td>$1200.00</td>
+											<td>${order.costo_total_esperado}.00</td>
 										</tr>
 										<tr>
 											<th>Costo Total Real</th>
-											<td>$2000.20</td>
+											<td>$563.00</td>
 										</tr>
 									</tbody>
 								</Table>
@@ -112,40 +124,22 @@ return (
 									</thead>
 									<tbody>
 										<tr>
-											<td>Caseta 1</td>
-											<td>$120.00</td>
-											<td>$200.20</td>
-											<td>10 ago 2024</td>
+											<td>Chichimequillas 127</td>
+											<td>$147.00</td>
+											<td>$104.20</td>
+											<td>01 ene 2024</td>
 										</tr>
 										<tr>
-											<td>Caseta 1</td>
-											<td>$120.00</td>
-											<td>$200.20</td>
-											<td>10 ago 2024</td>
+											<td>Tepeji Palmillas 20A</td>
+											<td>$416.00</td>
+											<td>$416.00</td>
+											<td>01 ene 2024</td>
 										</tr>
 										<tr>
-											<td>Caseta 1</td>
-											<td>$120.00</td>
-											<td>x</td>
+											<td>Tepozotlán</td>
+											<td>$444.00</td>
+											<td>(no transitó)</td>
 											<td></td>
-										</tr>
-										<tr>
-											<td>Caseta 1</td>
-											<td>$120.00</td>
-											<td>$200.20</td>
-											<td>10 ago 2024</td>
-										</tr>
-										<tr>
-											<td>Caseta 1</td>
-											<td>$120.00</td>
-											<td>$200.20</td>
-											<td>10 ago 2024</td>
-										</tr>
-										<tr>
-											<td>Caseta 1</td>
-											<td>-</td>
-											<td>$200.20</td>
-											<td>10 ago 2024</td>
 										</tr>
 									</tbody>
 								</Table>
@@ -160,10 +154,20 @@ return (
 			<Col>
 				<Card>
 					<CardBody>
+						<Row className='mb-4'>
+							<Col>
+								<h4>
+									Buscar órdenes por tag
+								</h4>
+							</Col>
+						</Row>
 						<Row>
-							<Col lg={6}>
+							<Col lg={1}>
+								<Button color="primary">Buscar</Button>
+							</Col>
+							<Col lg={5}>
 								<FormGroup>
-									<Input type="text" name="search" id="search" placeholder="Buscar ordenes por tag" />
+									<Input type="text" name="search" id="search" placeholder="Buscar ordenes por tag" defaultValue="OHLM01632770" />
 								</FormGroup>
 							</Col>
 							<Col lg={3}>
@@ -198,85 +202,46 @@ return (
 									</thead>
 									<tbody>
 										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
+											<td>1336155</td>
+											<td>-</td>
+											<td>02 ene 2023</td>
+											<td>02 ene 2023</td>
+											<td>Colgate Iturbide</td>
+											<td>Servicio Comercial Garis</td>
+											<td>2</td>
+											<td>$415.00</td>
 										</tr>
 										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
+											<td>1336156</td>
+											<td>-</td>
+											<td>02 ene 2023</td>
+											<td>02 ene 2023</td>
+											<td>Colgate Iturbide</td>
+											<td>Productos de consumo Z</td>
+											<td>4</td>
+											<td>$1,112.00</td>
 										</tr>
 										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
+											<td>1336157</td>
+											<td>-</td>
+											<td>02 ene 2023</td>
+											<td>02 ene 2023</td>
+											<td>Colgate Iturbide</td>
+											<td>Cedis Colgate Tultitlán</td>
+											<td>3</td>
+											<td>$563.00</td>
 										</tr>
 										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
+											<td>1336609</td>
+											<td>-</td>
+											<td>01 ene 2023</td>
+											<td>01 ene 2023</td>
+											<td>Colgate Iturbide</td>
+											<td>Cedis Colgate Tultitlán</td>
+											<td>3</td>
+											<td>$563.00</td>
 										</tr>
-										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
-										</tr>
-										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
-										</tr>
-										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
-										</tr>
-										<tr>
-											<td>2346426</td>
-											<td>10 Ago 2023</td>
-											<td>21 Ago 2023</td>
-											<td>22 Ago 2023</td>
-											<td>Irapuato</td>
-											<td>Monterrey</td>
-											<td>5</td>
-											<td>$1,200.00</td>
-										</tr>
+										
 									</tbody>
 								</Table>
 							</Col>
