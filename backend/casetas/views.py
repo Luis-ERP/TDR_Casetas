@@ -53,5 +53,5 @@ class OrderViewset(viewsets.ModelViewSet):
         else:
             qs = self.queryset.filter(**query_params)
         
-        return qs.order_by('-created')
+        return qs.order_by('-id')
     

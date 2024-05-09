@@ -3,7 +3,7 @@ from django.urls import re_path, include
 from casetas.views import OrderViewset
 
 router = DefaultRouter()
-router.register(r'orden', OrderViewset, basename='orden')
+router.register(r'ordenes', OrderViewset, basename='ordenes')
 
 urlpatterns = [
     re_path('^', include(router.urls)),

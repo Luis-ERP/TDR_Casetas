@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Table, FormGroup, Input, Card, CardBody } from 'reactstrap';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Container, Row, Col, Table, FormGroup, Input, Card, CardBody, Button, Form } from 'reactstrap';
 import './App.css';
 
 const data = {
@@ -18,6 +19,24 @@ const data = {
 
 function App() {
 	const [order, setOrder] = useState(data);
+
+	const onSubmitSearchOrder = (event) => {
+		event.preventDefault();
+
+		const orderId = event.target.search.value;
+		axios.get(`http://127.0.0.1:8000/casetas/ordernes/${orderId}`)
+		.then(response => {
+			if (response.data?.length === 0)
+				alert('No se encontró la orden');
+
+			setOrder(response.data);
+		})
+		.catch(error => {
+			alert('Error al buscar la orden');
+		});
+	};
+
+
 return (
 	<Container className="App">
 		<Row className='m-4'>
@@ -31,13 +50,18 @@ return (
 			<Col>
 				<Card>
 					<CardBody>
-						<Row>
-							<Col lg={6}>
-								<FormGroup>
-									<Input type="text" name="search" id="search" placeholder="Buscar orden" />
-								</FormGroup>
-							</Col>
-						</Row>
+						<Form onSubmit={onSubmitSearchOrder}>
+							<Row>
+								<Col lg={1}>
+									<Button color="primary">Buscar</Button>
+								</Col>
+								<Col lg={6}>
+									<FormGroup>
+										<Input type="text" name="search" id="search" placeholder="Buscar orden" />
+									</FormGroup>
+								</Col>
+							</Row>
+						</Form>
 						<Row>
 							<Col lg={3}>
 								<Table
