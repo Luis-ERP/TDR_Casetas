@@ -1,0 +1,23 @@
+button, .btn {
+    background: none !important;
+    border: none !important;
+    color: var(--bs-primary) !important;
+    font-weight: 600 !important;
+
+    &:hover {
+        color: var(--bs-primary) !important;
+        background-color: lightgray !important;
+    }
+}
+
+input, .form-control {
+    background-color: #ececec !important;
+    border: #ececec !important;
+}
+
+.nav-link {
+    &:hover {
+        background-color: rgb(233, 233, 233) !important;
+        cursor: pointer;
+    }
+}

@@ -1,10 +1,12 @@
+from rest_framework import viewsets, views, status
+from rest_framework.response import Response
 from django.db import models
 from django.db.models import Q
-from rest_framework import viewsets
-from casetas.models import Orden
-from casetas.serializers import OrdenSerializer
-from casetas.utils import parse_query_params
 import functools
+from casetas.models import Orden, UnidadTractor
+from casetas.serializers import OrdenSerializer, UnidadTractorSerializer
+from casetas.utils import parse_query_params
+from casetas.client.televia import TeleviaAPI
 
 
 class OrderViewset(viewsets.ModelViewSet):
@@ -55,3 +57,36 @@ class OrderViewset(viewsets.ModelViewSet):
         
         return qs.order_by('-id')
     
+
+class UnitViewset(viewsets.ModelViewSet):
+    queryset = UnidadTractor.objects.all()
+    serializer_class = UnidadTractorSerializer
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        context = {}
+        if 'start_dt' in request.GET and 'end_dt' in request.GET:
+            start_dt = request.GET.get('start_dt')
+            end_dt = request.GET.get('end_dt')
+            context['start_dt'] = start_dt
+            context['end_dt'] = end_dt
+            queryset = queryset.filter(ordenes__fecha_inicio__range=[start_dt, end_dt])
+        queryset = queryset.prefetch_related('ordenes', 'cruces')
+        serializer = self.get_serializer(queryset, many=True, context=context)
+        return Response(serializer.data)
+    
+
+class LoginWithTeleviaView(views.APIView):
+    
+    def post(self, request):
+        data = request.data
+        if 'username' not in data or 'password' not in data:
+            return Response({'message': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # televia = TeleviaAPI()
+        # televia.login(data['username'], data['password'])
+        # try:
+        # except Exception as e:
+        # return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'message': 'Login with televia successful'}, status=status.HTTP_200_OK)

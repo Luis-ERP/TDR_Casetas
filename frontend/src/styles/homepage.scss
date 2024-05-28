@@ -1,0 +1,12 @@
+
+.home-page {
+    .costs-per-month-card, .costs-per-week-card {
+        height: 180px;
+    }
+
+    .costs-per-unit-card, 
+    .costs-per-order-card, 
+    .costs-per-route-card {
+        height: 300px;
+    }
+}

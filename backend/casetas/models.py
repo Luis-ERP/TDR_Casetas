@@ -49,6 +49,9 @@ class OrdenCaseta(models.Model):
 
     def __str__(self) -> str:
         return f'{self.caseta} - {self.orden} ({self.id})'
+    
+    class Meta:
+        default_related_name = 'cruces'
 
 
 class Orden(models.Model):
@@ -63,3 +66,6 @@ class Orden(models.Model):
 
     def __str__(self) -> str:
         return f'{self.numero} ({self.id})'
+    
+    class Meta:
+        default_related_name = 'ordenes'

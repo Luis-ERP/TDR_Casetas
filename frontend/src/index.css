@@ -1,5 +1,9 @@
+* {
+  font-size: 14px;
+}
+
 html, #root {
-  background-color: rgb(13, 13, 94);
+  background-color: rgb(255, 255, 255);
 }
 
 h1, h2 {

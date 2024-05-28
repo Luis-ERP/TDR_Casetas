@@ -1,0 +1,23 @@
+.my-navbar {
+    padding: 0 0 10px 0;
+    display: flex;
+    justify-content: center;
+
+    div {
+        width: 250px;
+        padding: 12px;
+        background-color: var(--bs-primary);
+        border-radius: 0 0 13px 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        hr {
+            width: 1px;
+            height: 100%;
+            border-left: 2px solid white;
+            margin: 0 25px;
+        }
+    }
+
+}

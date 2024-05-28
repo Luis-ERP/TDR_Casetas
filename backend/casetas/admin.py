@@ -29,3 +29,4 @@ class OrdenAdmin(admin.ModelAdmin):
 @admin.register(UnidadTractor)
 class UnidadTractorAdmin(admin.ModelAdmin):
     list_display = ('tag', 'numero')
+    list_filter = ('numero','tag')
