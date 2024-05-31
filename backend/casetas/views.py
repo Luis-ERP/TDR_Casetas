@@ -3,10 +3,15 @@ from rest_framework.response import Response
 from django.db import models
 from django.db.models import Q
 import functools
-from casetas.models import Orden, UnidadTractor
-from casetas.serializers import OrdenSerializer, UnidadTractorSerializer
+from casetas.models import (Orden, 
+                            UnidadTractor, 
+                            OrdenCaseta)
+from casetas.serializers import (OrdenSerializer, 
+                                UnidadTractorSerializer, 
+                                OrdenCasetaSerializer)
 from casetas.utils import parse_query_params
 from casetas.client.televia import TeleviaAPI
+from datetime import datetime
 
 
 class OrderViewset(viewsets.ModelViewSet):
@@ -71,7 +76,7 @@ class UnitViewset(viewsets.ModelViewSet):
             context['start_dt'] = start_dt
             context['end_dt'] = end_dt
             queryset = queryset.filter(ordenes__fecha_inicio__range=[start_dt, end_dt])
-        queryset = queryset.prefetch_related('ordenes', 'cruces')
+        queryset = queryset.distinct()
         serializer = self.get_serializer(queryset, many=True, context=context)
         return Response(serializer.data)
     
@@ -90,3 +95,56 @@ class LoginWithTeleviaView(views.APIView):
         # return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({'message': 'Login with televia successful'}, status=status.HTTP_200_OK)
+
+
+class CrucesView(views.APIView):
+    
+    def get(self, request):
+        params = parse_query_params(request.GET)
+        start_dt = params.get('start_dt')
+        end_dt = params.get('end_dt')
+
+        cruces = OrdenCaseta.objects.filter(fecha__range=[start_dt, end_dt])
+        serialized_cruces = OrdenCasetaSerializer(cruces, many=True).data
+
+        if "group_by" in params:
+            group_by = params.get("group_by")
+            if group_by == "month":
+                grouped_data = {}
+                for cruce in serialized_cruces:
+                    date = datetime.fromisoformat(cruce['fecha'].replace('Z', ''))
+                    month = date.strftime('%m')
+                    if month not in grouped_data:
+                        grouped_data[month] = { 'total_cost': 0, 'cruces': [] }
+                    grouped_data[month]['total_cost'] += cruce['costo']
+                    grouped_data[month]['cruces'].append(cruce)
+
+                # Fill the missing months with total_cost=0 and cruces=0
+                for month in range(1, 13):
+                    month_str = str(month).zfill(2)
+                    if month_str not in grouped_data:
+                        grouped_data[month_str] = { 'total_cost': 0, 'cruces': [] }
+
+                grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
+                grouped_data = [{'month': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
+
+            elif group_by == "week":
+                grouped_data = {}
+                for cruce in serialized_cruces:
+                    date = datetime.fromisoformat(cruce['fecha'].replace('Z', ''))
+                    week = date.strftime('%V')
+                    if week not in grouped_data:
+                        grouped_data[week] = { 'total_cost': 0, 'cruces': [] }
+                    grouped_data[week]['total_cost'] += cruce['costo']
+                    grouped_data[week]['cruces'].append(cruce)
+
+                # Fill the missing weeks with total_cost=0 and cruces=0
+                for week in range(1, 53):
+                    week_str = str(week).zfill(2)
+                    if week_str not in grouped_data:
+                        grouped_data[week_str] = { 'total_cost': 0, 'cruces': [] }
+                
+                grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
+                grouped_data = [{'week': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
+
+        return Response(grouped_data, status=status.HTTP_200_OK)

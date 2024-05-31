@@ -1,8 +1,12 @@
 .sidebar {
     padding: 0 1.5rem;
+    height: 100vh;
+    background-color: #dcdcdc;
 
     .collapse-btn {
         padding-left: 9px;
+        color: rgb(104, 104, 104);
+
         &:hover {
             cursor: pointer;
             color: var(--bs-primary);
@@ -21,6 +25,11 @@
         span {
             position: absolute;
             left: 35px;
+        }
+
+        &.active {
+            background-color: var(--bs-primary);
+            color: white;
         }
     }
 

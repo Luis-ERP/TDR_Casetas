@@ -26,6 +26,14 @@ class OrdenSerializer(serializers.ModelSerializer):
         model = Orden
         fields = '__all__'
 
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        cruces = instance.cruces.all()
+        response['cruces'] = cruces.count()
+        total_cost = sum([cruce.costo for cruce in cruces])
+        response['total_cost'] = total_cost
+        return response
+
 
 class UnidadTractorSerializer(serializers.ModelSerializer):
     class Meta:

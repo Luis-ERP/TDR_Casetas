@@ -7,6 +7,10 @@ class Lugar(models.Model):
 
     def __str__(self) -> str:
         return f'{self.nombre} ({self.id})'
+    
+    class Meta:
+        default_related_name = 'lugares'
+        verbose_name_plural = 'lugares'
 
 
 class Caseta(models.Model):
@@ -38,6 +42,10 @@ class UnidadTractor(models.Model):
 
     def __str__(self) -> str:
         return f'{self.tag} ({self.id})'
+    
+    class Meta:
+        default_related_name = 'unidades'
+        verbose_name_plural = 'unidades'
 
 
 class OrdenCaseta(models.Model):
@@ -52,6 +60,7 @@ class OrdenCaseta(models.Model):
     
     class Meta:
         default_related_name = 'cruces'
+        verbose_name_plural = 'cruces'
 
 
 class Orden(models.Model):
@@ -69,3 +78,4 @@ class Orden(models.Model):
     
     class Meta:
         default_related_name = 'ordenes'
+        verbose_name_plural = 'ordenes'

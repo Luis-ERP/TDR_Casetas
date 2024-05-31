@@ -2,8 +2,6 @@
 export function objectToUrlQueryString(urlString, params) {
 	if (params.length === 0)
 		return urlString;
-	if (urlString[urlString.length-1] !== '/')
-		urlString = urlString + '/';
 	let queryString = Object.entries(params).reduce((previousValue, currentValue) => previousValue + `&${currentValue[0]}=${currentValue[1]}`, '');
 	queryString = queryString.slice(1, queryString.length);
 	if (queryString !== '')

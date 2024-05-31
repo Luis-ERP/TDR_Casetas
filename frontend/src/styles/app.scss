@@ -25,7 +25,7 @@
 }
 
 .App-link {
-  color: #61dafb;
+  color: var(--bs-primary);
 }
 
 @keyframes App-logo-spin {
@@ -42,13 +42,22 @@ td, th, tr {
 }
 
 tr th {
-  color: #0012db !important;
+  color: rgba(var(--bs-primary-rgb), 0.5);
 }
 
 .content {
   flex: 1;
+  background-color: #fafafa;
 }
 
 .card {
   margin-bottom: 1.7rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.text-align-center {
+  text-align: center;
 }
