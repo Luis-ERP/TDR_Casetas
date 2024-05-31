@@ -11,7 +11,7 @@ import {
     Table
 } from "reactstrap";
 import { useSearchParams } from "react-router-dom";
-import { getUnits } from "../client/units";
+import { getCrucesByUnidad } from "../client/cruces";
 import { getOrders } from "../client/orders";
 
 
@@ -25,8 +25,9 @@ export default function UnitsPage(props) {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const getUnitsData = (endOfMonth, startOfMonth) => {
-        getUnits({ 'start_dt': startOfMonth.toISOString(), 'end_dt': endOfMonth.toISOString() })
+        getCrucesByUnidad({ 'start_dt': startOfMonth.toISOString(), 'end_dt': endOfMonth.toISOString() })
         .then((data) => {
+            if (data.length === 0) return;
             setUnits(data);
         });
     };
@@ -41,7 +42,6 @@ export default function UnitsPage(props) {
                 params.fecha_inicio__lt = endOfMonth.toISOString();
             }
             getOrders(params).then((data) => {
-                console.log(data);
                 setOrders(data);
             });
         }
@@ -108,6 +108,7 @@ export default function UnitsPage(props) {
                                     <h4>Económicos</h4>
                                 </Col>
                             </Row>
+                            
                             <Row>
                                 <Col md={6} lg={2}>
                                     <FormGroup>
@@ -164,6 +165,7 @@ export default function UnitsPage(props) {
                                     </FormGroup>
                                 </Col> */}
                             </Row>
+
                             <Row>
                                 <Col md={12} lg={6}>
                                     <Table
@@ -181,20 +183,18 @@ export default function UnitsPage(props) {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {units.map((unit) => {
-                                                return (
-                                                    <tr 
-                                                    key={unit.numero} 
-                                                    onClick={() => setSelectedUnit(unit.numero)}
-                                                    className="cursor-pointer">
-                                                        <td>{unit.numero}</td>
-                                                        <td>{unit.tag}</td>
-                                                        <td>{unit.ordenes}</td>
-                                                        <td>{unit.cruces}</td>
-                                                        <td>$ {unit.total_cost}</td>
-                                                    </tr>
-                                                );
-                                            })}                                            
+                                            {units.map((unit) => (
+                                                <tr 
+                                                key={unit.unidad} 
+                                                onClick={() => setSelectedUnit(unit.unidad)}
+                                                className="cursor-pointer">
+                                                    <td>{unit.unidad}</td>
+                                                    <td>{unit.tag}</td>
+                                                    <td>{unit?.ordenes}</td>
+                                                    <td>{unit.cruces.length}</td>
+                                                    <td>$ {unit.total_cost}</td>
+                                                </tr>
+                                            ))}                                            
                                         </tbody>
                                     </Table>
                                 </Col>
