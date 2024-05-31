@@ -25,3 +25,25 @@ export async function getCrucesByUnidad(params = {}) {
         return null;
     }
 }
+
+export async function getCrucesByOrden(params = {}) {
+    const endpoint = objectToUrlQueryString(`${baseURL}/casetas/cruces/orden`, params);
+    try {
+        const response = await axios.get(endpoint);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export async function getCrucesByCaseta(params = {}) {
+    const endpoint = objectToUrlQueryString(`${baseURL}/casetas/cruces/caseta`, params);
+    try {
+        const response = await axios.get(endpoint);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}

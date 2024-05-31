@@ -152,7 +152,6 @@ class CrucesView(views.APIView):
 
 
 class CrucesByUnitView(views.APIView):
-
     def get(self, request):
         params = parse_query_params(request.GET)
         start_dt = params.get('start_dt')
@@ -171,4 +170,50 @@ class CrucesByUnitView(views.APIView):
         grouped_units = [{'tag': key, 'total_cost': value['total_cost'], 'cruces': value['cruces'], 'unidad': value['unidad']} for key, value in grouped_units.items()]
         grouped_units = sorted(grouped_units, key=lambda x: x['total_cost'], reverse=True)
         return Response(grouped_units, status=status.HTTP_200_OK)
+    
+
+class CrucesByOrderView(views.APIView):
+    def get(self, request):
+        params = parse_query_params(request.GET)
+        start_dt = params.get('start_dt')
+        end_dt = params.get('end_dt')
+
+        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        grouped_orders = {}
+        for cruce in cruces:
+            if cruce.orden:
+                numero = cruce.orden.numero
+            else:
+                numero = 'Sin orden'
+            if numero not in grouped_orders:
+                grouped_orders[numero] = { 'total_cost': 0, 'cruces': []}
+            grouped_orders[numero]['total_cost'] += cruce.costo
+            grouped_orders[numero]['cruces'].append(OrdenCasetaSerializer(cruce).data)
+
+        grouped_orders = [{'numero': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_orders.items()]
+        grouped_orders = sorted(grouped_orders, key=lambda x: x['total_cost'], reverse=True)
+        return Response(grouped_orders, status=status.HTTP_200_OK)
+    
+
+class CrucesByCasetaView(views.APIView):
+    def get(self, request):
+        params = parse_query_params(request.GET)
+        start_dt = params.get('start_dt')
+        end_dt = params.get('end_dt')
+
+        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        grouped_casetas = {}
+        for cruce in cruces:
+            if cruce.caseta:
+                nombre = cruce.caseta.nombre
+            else:
+                nombre = 'Sin caseta'
+            if nombre not in grouped_casetas:
+                grouped_casetas[nombre] = { 'total_cost': 0, 'cruces': []}
+            grouped_casetas[nombre]['total_cost'] += cruce.costo
+            grouped_casetas[nombre]['cruces'].append(OrdenCasetaSerializer(cruce).data)
+
+        grouped_casetas = [{'nombre': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_casetas.items()]
+        grouped_casetas = sorted(grouped_casetas, key=lambda x: x['total_cost'], reverse=True)
+        return Response(grouped_casetas, status=status.HTTP_200_OK)
     

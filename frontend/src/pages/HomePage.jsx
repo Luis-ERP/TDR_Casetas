@@ -10,7 +10,12 @@ import {
     Row,
     Table,
 } from 'reactstrap';
-import { getCruces, getCrucesByUnidad } from '../client/cruces';
+import { 
+    getCruces, 
+    getCrucesByUnidad, 
+    getCrucesByOrden,
+    getCrucesByCaseta 
+} from '../client/cruces';
 import StackedBarChart from '../components/widgets/StackedBarChart';
 import '../styles/homepage.scss';
 
@@ -36,6 +41,8 @@ export default function HomePage(props) {
     const [crucesByWeek, setCrucesByWeek] = useState([]);
     const [selectedPeriod, setSelectedPeriod] = useState();
     const [units, setUnits] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [casetas, setCasetas] = useState([]);
 
     useEffect(() => {
         if (!selectedYear) return;
@@ -81,7 +88,6 @@ export default function HomePage(props) {
         let end;
         try {
             let numberOfWeek = parseInt(selectedPeriod);
-            console.log(numberOfWeek);
             if (isNaN(numberOfWeek)) throw new Error('Invalid week number');
             const date = new Date(selectedYear, 0, 1);
             const day = date.getDay();
@@ -93,6 +99,7 @@ export default function HomePage(props) {
             start = new Date(selectedYear, month, 1);
             end = new Date(selectedYear, month + 1, 1);
         }
+
         getCrucesByUnidad({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
             const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
@@ -103,10 +110,37 @@ export default function HomePage(props) {
                 cruces: new Array(averageCruces),
                 total_cost: averageCost
             };
-            // insert average row and sort by total_cost
             data.push(averageRow);
             const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
             setUnits(sortedData);
+        });
+
+        getCrucesByOrden({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
+        .then((data) => {
+            const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
+            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
+            const averageRow = {
+                numero: 'Promedio',
+                total_cost: averageCost,
+                cruces: new Array(averageCruces),
+            };
+            data.push(averageRow);
+            const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
+            setOrders(sortedData);
+        });
+
+        getCrucesByCaseta({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
+        .then((data) => {
+            const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
+            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
+            const averageRow = {
+                nombre: 'Promedio',
+                total_cost: averageCost,
+                cruces: new Array(averageCruces),
+            };
+            data.push(averageRow);
+            const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
+            setCasetas(sortedData);
         });
 
     }, [selectedPeriod]);
@@ -200,6 +234,7 @@ export default function HomePage(props) {
                         </CardBody>
                     </Card>
                 </Col>
+
                 <Col>
                     <Card className='costs-per-order-card'>
                         <CardHeader>
@@ -211,54 +246,47 @@ export default function HomePage(props) {
                                 <thead>
                                     <tr>
                                         <th>Orden</th>
+                                        <th>Cruces</th>
                                         <th>Costo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>2842</td>
-                                        <td>$ 3,000.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3893</td>
-                                        <td>$ 2,000.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>1829</td>
-                                        <td>$ 1,000.00</td>
-                                    </tr>
+                                    {orders.map((order, i) => (
+                                        <tr key={i}>
+                                            <td className={order.numero==='Promedio'? 'promedio':''}>{order.numero}</td>
+                                            <td className={order.numero==='Promedio'? 'promedio':''}>{order.cruces.length || 0}</td>
+                                            <td className={order.numero==='Promedio'? 'promedio':''}>$ {order.total_cost}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </Table>
                         </CardBody>
                     </Card>
                 </Col>
+
                 <Col>
                     <Card className='costs-per-route-card'>
                         <CardHeader>
-                            <h4 className='d-inline px-2'>Gastos por cruce</h4>
+                            <h4 className='d-inline px-2'>Gastos por caseta</h4>
                             <p className='d-inline'>({selectedPeriod})</p>
                         </CardHeader>
                         <CardBody>
                             <Table>
                                 <thead>
                                     <tr>
-                                        <th>Cruce</th>
+                                        <th>Caseta</th>
+                                        <th>Cruces</th>
                                         <th>Costo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Chichimequillas</td>
-                                        <td>$ 3,000.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Edo. Mex</td>
-                                        <td>$ 2,000.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Querétaro</td>
-                                        <td>$ 1,000.00</td>
-                                    </tr>
+                                    {casetas.map((caseta, i) => (
+                                        <tr key={i}>
+                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.nombre}</td>
+                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.cruces.length || 0}</td>
+                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>$ {caseta.total_cost}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </Table>
                         </CardBody>
