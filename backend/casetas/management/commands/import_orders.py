@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from casetas.models import Orden, Lugar, UnidadTractor, Ruta
-from datetime import datetime
+from casetas.models import Orden, Lugar, UnidadTractor, Ruta, OrdenCaseta
+from datetime import datetime, timedelta
 import pandas as pd
 
 class Command(BaseCommand):
@@ -21,8 +21,8 @@ class Command(BaseCommand):
                 if not lugar_destino:
                     lugar_destino = Lugar.objects.create(nombre=row['dest_cmp_name'], nombre_id=row['dest_cmp_id'])
 
-                fecha_inicio = datetime.strptime(row['origin_earliest'], '%d/%m/%Y %H:%M')
-                fecha_fin = datetime.strptime(row['dest_latest'], '%d/%m/%Y %H:%M')
+                fecha_inicio = datetime.strptime(row['origin_earliest'], '%m/%d/%Y %H:%M')
+                fecha_fin = datetime.strptime(row['dest_latest'], '%m/%d/%Y %H:%M')
                 ruta = Ruta.objects.filter(
                     lugar_origen=lugar_origen,
                     lugar_destino=lugar_destino
@@ -35,7 +35,7 @@ class Command(BaseCommand):
                 if not unidad:
                     unidad = UnidadTractor.objects.create(numero=id_unidad)
 
-                orden = Orden.objects.get_or_create(
+                orden, created = Orden.objects.get_or_create(
                     numero=numero,
                     fecha_inicio=fecha_inicio,
                     fecha_fin=fecha_fin,
@@ -44,3 +44,12 @@ class Command(BaseCommand):
                     unidad=unidad,
                     ruta=ruta
                 )
+
+                # Buscar y asociar cruces de casetas
+                fecha_inicio = orden.fecha_inicio - timedelta(hours=10)
+                fecha_fin = orden.fecha_fin + timedelta(hours=10)
+                cruces = OrdenCaseta.objects.filter(
+                    fecha__range=(fecha_inicio, fecha_fin),
+                    unidad=unidad
+                )
+                cruces.update(orden=orden)

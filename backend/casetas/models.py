@@ -1,4 +1,6 @@
-from django.db import models
+from django.db import models, transaction
+from datetime import timedelta, datetime
+import pandas as pd
 
 # Create your models here.
 class Lugar(models.Model):

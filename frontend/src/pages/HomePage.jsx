@@ -11,6 +11,7 @@ import {
     Table,
 } from 'reactstrap';
 import { getCruces } from '../client/cruces';
+import { getUnits } from '../client/units';
 import StackedBarChart from '../components/widgets/StackedBarChart';
 import '../styles/homepage.scss';
 
@@ -35,6 +36,7 @@ export default function HomePage(props) {
     const [crucesByMonth, setCrucesByMonth] = useState([]);
     const [crucesByWeek, setCrucesByWeek] = useState([]);
     const [selectedPeriod, setSelectedPeriod] = useState();
+    const [units, setUnits] = useState([]);
 
     useEffect(() => {
         if (!selectedYear) return;
@@ -77,6 +79,24 @@ export default function HomePage(props) {
     useEffect(() => {
         if (!selectedPeriod) return;
 
+        let start;
+        let end;
+        try {
+            const numberOfWeek = parseInt(selectedPeriod);
+            if (isNaN(numberOfWeek)) throw new Error('Invalid week number');
+            const date = new Date(selectedYear, 0, 1);
+            const day = date.getDay();
+            start = new Date(date.setDate(date.getDate() + (numberOfWeek - 1) * 7 - day));
+            end = new Date(date.setDate(date.getDate() + 6));
+        } catch (error) {
+            start = new Date(selectedYear, Object.keys(monthsMapping).indexOf(selectedPeriod), 1);
+            end = new Date(selectedYear, Object.keys(monthsMapping).indexOf(selectedPeriod) + 1, 0);
+        }
+        console.log(start, end);
+        getUnits({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
+        .then((data) => {
+            setUnits(data);
+        });
 
     }, [selectedPeriod]);
 
