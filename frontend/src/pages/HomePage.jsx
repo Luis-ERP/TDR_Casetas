@@ -10,8 +10,7 @@ import {
     Row,
     Table,
 } from 'reactstrap';
-import { getCruces } from '../client/cruces';
-import { getUnits } from '../client/units';
+import { getCruces, getCrucesByUnidad } from '../client/cruces';
 import StackedBarChart from '../components/widgets/StackedBarChart';
 import '../styles/homepage.scss';
 
@@ -78,24 +77,36 @@ export default function HomePage(props) {
 
     useEffect(() => {
         if (!selectedPeriod) return;
-
         let start;
         let end;
         try {
-            const numberOfWeek = parseInt(selectedPeriod);
+            let numberOfWeek = parseInt(selectedPeriod);
+            console.log(numberOfWeek);
             if (isNaN(numberOfWeek)) throw new Error('Invalid week number');
             const date = new Date(selectedYear, 0, 1);
             const day = date.getDay();
             start = new Date(date.setDate(date.getDate() + (numberOfWeek - 1) * 7 - day));
-            end = new Date(date.setDate(date.getDate() + 6));
+            end = new Date(date.setDate(date.getDate() + 7));
         } catch (error) {
-            start = new Date(selectedYear, Object.keys(monthsMapping).indexOf(selectedPeriod), 1);
-            end = new Date(selectedYear, Object.keys(monthsMapping).indexOf(selectedPeriod) + 1, 0);
+            let month = Object.entries(monthsMapping).find(([key, value]) => value === selectedPeriod)
+            month = parseInt(month[0]) - 1;
+            start = new Date(selectedYear, month, 1);
+            end = new Date(selectedYear, month + 1, 1);
         }
-        console.log(start, end);
-        getUnits({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
+        getCrucesByUnidad({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
-            setUnits(data);
+            const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
+            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
+            const averageRow = {
+                tag: 'average',
+                unidad: 'Promedio',
+                cruces: new Array(averageCruces),
+                total_cost: averageCost
+            };
+            // insert average row and sort by total_cost
+            data.push(averageRow);
+            const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
+            setUnits(sortedData);
         });
 
     }, [selectedPeriod]);
@@ -172,22 +183,18 @@ export default function HomePage(props) {
                                 <thead>
                                     <tr>
                                         <th>Unidad</th>
+                                        <th>Cruces</th>
                                         <th>Costo</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>2842</td>
-                                        <td>$ 3,000.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3893</td>
-                                        <td>$ 2,000.00</td>
-                                    </tr>
-                                    <tr>
-                                        <td>1829</td>
-                                        <td>$ 1,000.00</td>
-                                    </tr>
+                                    {units.map(unit => (
+                                        <tr key={unit.tag}>
+                                            <td className={unit.tag==='average'? 'promedio':''}>{unit.unidad}</td>
+                                            <td className={unit.tag==='average'? 'promedio':''}>{unit.cruces.length || 0}</td>
+                                            <td className={unit.tag==='average'? 'promedio':''}>$ {unit.total_cost}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </Table>
                         </CardBody>

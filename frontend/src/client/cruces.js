@@ -14,3 +14,14 @@ export async function getCruces(params = {}) {
         return null;
     }
 }
+
+export async function getCrucesByUnidad(params = {}) {
+    const endpoint = objectToUrlQueryString(`${baseURL}/casetas/cruces/unidad`, params);
+    try {
+        const response = await axios.get(endpoint);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}

@@ -75,7 +75,8 @@ class UnitViewset(viewsets.ModelViewSet):
             end_dt = request.GET.get('end_dt')
             context['start_dt'] = start_dt
             context['end_dt'] = end_dt
-            queryset = queryset.filter(ordenes__fecha_inicio__range=[start_dt, end_dt])
+            queryset = queryset.filter(ordenes__fecha_inicio__gte=start_dt, 
+                                       ordenes__fecha_inicio__lt=end_dt)
         queryset = queryset.distinct()
         serializer = self.get_serializer(queryset, many=True, context=context)
         return Response(serializer.data)
@@ -104,7 +105,7 @@ class CrucesView(views.APIView):
         start_dt = params.get('start_dt')
         end_dt = params.get('end_dt')
 
-        cruces = OrdenCaseta.objects.filter(fecha__range=[start_dt, end_dt])
+        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
         serialized_cruces = OrdenCasetaSerializer(cruces, many=True).data
 
         if "group_by" in params:
@@ -148,3 +149,26 @@ class CrucesView(views.APIView):
                 grouped_data = [{'week': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
 
         return Response(grouped_data, status=status.HTTP_200_OK)
+
+
+class CrucesByUnitView(views.APIView):
+
+    def get(self, request):
+        params = parse_query_params(request.GET)
+        start_dt = params.get('start_dt')
+        end_dt = params.get('end_dt')
+
+        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        grouped_units = {}
+        for cruce in cruces:
+            cruce.unidad.tag = cruce.unidad.tag if cruce.unidad.tag else 'Sin tag'
+            if cruce.unidad.tag not in grouped_units:
+                grouped_units[cruce.unidad.tag] = { 'total_cost': 0, 'cruces': [], 'unidad': None }
+            grouped_units[cruce.unidad.tag]['total_cost'] += cruce.costo
+            grouped_units[cruce.unidad.tag]['unidad'] = cruce.unidad.numero
+            grouped_units[cruce.unidad.tag]['cruces'].append(OrdenCasetaSerializer(cruce).data)
+
+        grouped_units = [{'tag': key, 'total_cost': value['total_cost'], 'cruces': value['cruces'], 'unidad': value['unidad']} for key, value in grouped_units.items()]
+        grouped_units = sorted(grouped_units, key=lambda x: x['total_cost'], reverse=True)
+        return Response(grouped_units, status=status.HTTP_200_OK)
+    
