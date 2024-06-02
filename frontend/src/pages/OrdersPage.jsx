@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { 
     Container, 
@@ -12,35 +12,18 @@ import {
     Button, 
     Form 
 } from 'reactstrap';
+import { getCruces } from '../client/cruces';
 
-
-const data = {
-	'id': 43,
-	'numero': '1336609',
-	'costo_total_esperado': 1007.0,
-	'unidad': {
-		'id': 262,
-		'tag': 'OHLM01632770',
-		'numero': 1846
-	},
-	'lugar_origen': {
-		'id': 1,
-		'name': 'Colgate Iturbide'
-	},
-	'lugar_destino': {
-		'id': 2,
-		'name': 'Cedis Colgate Tultitlán'
-	},
-}
 
 export default function OrdersPage(props) {
-	const [order, setOrder] = useState(data);
+	const [order, setOrder] = useState();
+    const [cruces, setCruces] = useState();
 
     const onSubmitSearchOrder = (event) => {
 		event.preventDefault();
 
 		const orderId = event.target.search.value;
-		axios.get(`http://127.0.0.1:8000/casetas/ordernes/${orderId}`)
+		axios.get(`http://127.0.0.1:8002/casetas/ordenes/${orderId}/`)
 		.then(response => {
 			if (response.data?.length === 0)
 				alert('No se encontró la orden');
@@ -52,14 +35,17 @@ export default function OrdersPage(props) {
 		});
 	};
 
+    useEffect(() => {
+        if (!order) return;
+        getCruces({ orden: order.numero })
+        .then(data => {
+            data = data.map(x => ({ ...x, fecha: new Date(x.fecha).toLocaleDateString() }));
+            setCruces(data);
+        });
+    }, [order]);
+
     return (
     <Container>
-        <Row>
-            <span>
-                <h2>Sistema de comparación de casetas</h2>
-            </span>
-        </Row>
-
         <Row>
             <Col>
                 <Card>
@@ -89,69 +75,88 @@ export default function OrdersPage(props) {
                                 responsive
                                 size="sm"
                                 >
-                                    <tbody>
-                                        <tr>
-                                            <th>Orden</th>
-                                            <th>{order.numero}</th>
-                                        </tr>
-                                        <tr>
-                                            <th>Tag</th>
-                                            <td>{order.unidad.tag}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Origen</th>
-                                            <td>{order.lugar_origen.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Destino</th>
-                                            <td>{order.lugar_destino.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Costo Total Esperado</th>
-                                            <td>${order.costo_total_esperado}.00</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Costo Total Real</th>
-                                            <td>$563.00</td>
-                                        </tr>
-                                    </tbody>
+                                        {order &&
+                                            <tbody> 
+                                                <tr>
+                                                    <th>Orden</th>
+                                                    <th>{order.numero}</th>
+                                                </tr>
+                                                <tr>
+                                                    <th>Tag</th>
+                                                    <td>{order.unidad.tag}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Origen</th>
+                                                    <td>{order.lugar_origen.nombre}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Destino</th>
+                                                    <td>{order.lugar_destino.nombre}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Costo total esperado</th>
+                                                    <td></td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Costo total real</th>
+                                                    <td>$ {parseInt(order.total_cost)}.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Costo diferencia</th>
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
+                                        }
                                 </Table>
                             </Col>
-                            <Col lg={9}>
-                                <Table
-                                hover
-                                responsive
-                                size="sm"
-                                >
-                                    <thead>
-                                        <tr>
-                                            <th>Caseta</th>
-                                            <th>Costo Global Maps (esperado)</th>
-                                            <th>Costo Televía (real)</th>
-                                            <th>Fecha de cruce</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Chichimequillas 127</td>
-                                            <td>$147.00</td>
-                                            <td>$104.20</td>
-                                            <td>01 ene 2024</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Tepeji Palmillas 20A</td>
-                                            <td>$416.00</td>
-                                            <td>$416.00</td>
-                                            <td>01 ene 2024</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Tepozotlán</td>
-                                            <td>$444.00</td>
-                                            <td>(no transitó)</td>
-                                            <td></td>
-                                        </tr>
-                                    </tbody>
-                                </Table>
+                            <Col lg={1} />
+                            <Col lg={8}>
+                                {order &&
+                                    <>
+                                        <h5>Detalle de cruces</h5>
+                                        <Table
+                                        hover
+                                        responsive
+                                        size="sm"
+                                        >
+                                            <thead>
+                                                <tr>
+                                                    <th>Caseta</th>
+                                                    <th>Costo Global Maps</th>
+                                                    <th>Costo Televía</th>
+                                                    <th>Diferencia</th>
+                                                    <th>Fecha</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {cruces != null && 
+                                                    cruces.length > 0 ?
+                                                        cruces.map(cruce => (
+                                                            <tr>
+                                                                <td>{cruce.caseta?.nombre}</td>
+                                                                <td></td>
+                                                                <td>$ {cruce.costo}.00</td>
+                                                                <td>$ {cruce.diferencia}.00</td>
+                                                                <td>{cruce.fecha}</td>
+                                                            </tr>
+                                                        ))
+                                                    : <tr><td>No se encontraron cruces para esta orden.</td></tr>
+
+                                                }
+
+                                                <tr style={{ height: '20px' }} />
+                                                
+                                                <tr>
+                                                    <td><strong>Total</strong></td>
+                                                    <td>$ 500.50</td>
+                                                    <td>$ 512.12</td>
+                                                    <td>$ +12.00</td>
+                                                    <td></td>
+                                                </tr>
+                                            </tbody>
+                                        </Table>
+                                    </>
+                                }
                             </Col>
                         </Row>
                     </CardBody>

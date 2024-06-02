@@ -6,33 +6,30 @@ class LugarSerializer(serializers.ModelSerializer):
         model = Lugar
         fields = '__all__'
 
+
 class CasetaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Caseta
         fields = '__all__'
+
 
 class RutaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ruta
         fields = '__all__'
 
+
 class OrdenCasetaSerializer(serializers.ModelSerializer):
+    caseta = CasetaSerializer()
+    
     class Meta:
         model = OrdenCaseta
         fields = '__all__'
 
-class OrdenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Orden
-        fields = '__all__'
-
-    def to_representation(self, instance):
-        response = super().to_representation(instance)
-        cruces = instance.cruces.all()
-        response['cruces'] = cruces.count()
-        total_cost = sum([cruce.costo for cruce in cruces])
-        response['total_cost'] = total_cost
-        return response
+    def to_representation(self, instance, *args, **kwargs):
+        data = super(OrdenCasetaSerializer, self).to_representation(instance, *args, **kwargs)
+        data['diferencia'] = 0
+        return data
 
 
 class UnidadTractorSerializer(serializers.ModelSerializer):
@@ -52,4 +49,22 @@ class UnidadTractorSerializer(serializers.ModelSerializer):
             total_cost = sum([cruce.costo for cruce in instance.cruces.filter(fecha__range=[start_dt, end_dt])])
             response['total_cost'] = total_cost
 
+        return response
+
+
+class OrdenSerializer(serializers.ModelSerializer):
+    unidad = UnidadTractorSerializer()
+    lugar_destino = LugarSerializer()
+    lugar_origen = LugarSerializer()
+    
+    class Meta:
+        model = Orden
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        response = super().to_representation(instance)
+        cruces = instance.cruces.all()
+        response['cruces'] = cruces.count()
+        total_cost = sum([cruce.costo for cruce in cruces])
+        response['total_cost'] = total_cost
         return response

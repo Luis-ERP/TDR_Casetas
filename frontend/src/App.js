@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import OrdersPage from './pages/OrdersPage';
 import UnitsPage from './pages/UnitsPage';
+import CasetasPage from './pages/CasetasPage';
 import LoginPage from './pages/LoginPage';
 import useSession from './hooks/useSession';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -28,9 +29,10 @@ function App() {
 							<Sidebar activeLink={page} setActiveLink={setPage} />
 							<div className='content'>
 								<Navbar />
-								{page === 'inicio' ? <HomePage changeLink={setPage} />
+								{page === 'inicio'    ? <HomePage changeLink={setPage} />
 								: page === 'unidades' ? <UnitsPage changeLink={setPage} />
-								: page === 'ordenes' ? <OrdersPage changeLink={setPage} />
+								: page === 'ordenes'  ? <OrdersPage changeLink={setPage} />
+								: page === 'casetas'  ? <CasetasPage changeLink={setPage} />
 								: <></>
 								}
 							</div>

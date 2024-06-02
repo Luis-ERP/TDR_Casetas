@@ -18,49 +18,11 @@ class OrderViewset(viewsets.ModelViewSet):
     queryset = Orden.objects.all()
     serializer_class = OrdenSerializer
 
-    def get_queryset(self):
-        params = parse_query_params(self.request.GET)
-        fields = [f.name.split('__')[0] for f in self.queryset.model._meta.get_fields()]
 
-        exclude_fields = {}
-        for param_key, param_val in params.copy().items():
-            if 'exclude__' in param_key:
-                exclude_fields[param_key] = param_val
-                params.pop(param_key)
-
-        # Filter all the query params that are invalid for the model orm
-        query_params = {}
-        for param in params.copy().keys():
-            param_key = param.split('__')[0]
-            matching_keys = [True if field == param_key else False for field in fields]
-            matched_any = functools.reduce(lambda prev, next: prev or next, matching_keys, False)
-            if matched_any:
-                query_params[param] = params[param]
-
-        # Filter search param
-        char_field_names = [field.name for field in self.queryset.model._meta.fields 
-                            if isinstance(field, models.CharField)]
-        query_params_list = []
-        search_string = params.get('search')
-        if search_string:
-            for field in char_field_names:
-                query_key = f'{field}__icontains'
-                query_params_list.append({query_key: search_string})
-        
-        # Combine Q objects using the OR operator
-        combined_q = []
-        if query_params_list:
-            q_objects = [Q(**qp) for qp in query_params_list]
-            combined_q = q_objects.pop()
-            for q in q_objects:
-                combined_q |= q
-
-        if combined_q:
-            qs = self.queryset.filter(combined_q, **query_params)
-        else:
-            qs = self.queryset.filter(**query_params)
-        
-        return qs.order_by('-id')
+    def retrieve(self, request, pk=None):
+        qs = self.get_queryset().get(numero=pk)
+        serializer = self.serializer_class(qs)
+        return Response(serializer.data)
     
 
 class UnitViewset(viewsets.ModelViewSet):
@@ -104,9 +66,23 @@ class CrucesView(views.APIView):
         params = parse_query_params(request.GET)
         start_dt = params.get('start_dt')
         end_dt = params.get('end_dt')
+        unidad = params.get('tag')
+        orden = params.get('orden')
 
-        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        qs_params = {}
+        if start_dt and end_dt:
+            qs_params['fecha__gte'] = start_dt
+            qs_params['fecha__lt'] = end_dt
+        elif unidad:
+            qs_params['unidad__tag'] = unidad
+        elif orden:
+            qs_params['orden__numero'] = orden
+        else:
+            return Response({ "error": "Missing query parameters" }, status=status.HTTP_400_BAD_REQUEST)
+        
+        cruces = OrdenCaseta.objects.filter(**qs_params)
         serialized_cruces = OrdenCasetaSerializer(cruces, many=True).data
+        response_data = serialized_cruces
 
         if "group_by" in params:
             group_by = params.get("group_by")
@@ -128,6 +104,7 @@ class CrucesView(views.APIView):
 
                 grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
                 grouped_data = [{'month': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
+                response_data = grouped_data
 
             elif group_by == "week":
                 grouped_data = {}
@@ -147,8 +124,9 @@ class CrucesView(views.APIView):
                 
                 grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
                 grouped_data = [{'week': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
+                response_data = grouped_data
 
-        return Response(grouped_data, status=status.HTTP_200_OK)
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class CrucesByUnitView(views.APIView):
