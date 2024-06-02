@@ -25,7 +25,7 @@ function App() {
 					<Route
 					path=""
 					element={
-						<>
+						<div className='App-content'>
 							<Sidebar activeLink={page} setActiveLink={setPage} />
 							<div className='content'>
 								<Navbar />
@@ -36,7 +36,7 @@ function App() {
 								: <></>
 								}
 							</div>
-						</>
+						</div>
 					}/>
 				</Routes>
 			</BrowserRouter>

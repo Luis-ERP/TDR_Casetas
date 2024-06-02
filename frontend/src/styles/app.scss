@@ -1,3 +1,18 @@
+.App {
+  height: 100vh;
+
+  .App-content {
+    display: flex;
+    width: 100%;
+  }
+
+  .content {
+    flex: 1;
+    background-color: #fafafa;
+    overflow-y: scroll;
+  }
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -39,11 +54,6 @@ td, th, tr {
 
 tr th {
   color: rgba(var(--bs-primary-rgb), 0.5);
-}
-
-.content {
-  flex: 1;
-  background-color: #fafafa;
 }
 
 .card {
