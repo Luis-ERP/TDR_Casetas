@@ -92,18 +92,18 @@ class CrucesView(views.APIView):
                     date = datetime.fromisoformat(cruce['fecha'].replace('Z', ''))
                     month = date.strftime('%m')
                     if month not in grouped_data:
-                        grouped_data[month] = { 'total_cost': 0, 'cruces': [] }
-                    grouped_data[month]['total_cost'] += cruce['costo']
+                        grouped_data[month] = { 'costo_total': 0, 'cruces': [] }
+                    grouped_data[month]['costo_total'] += cruce['costo']
                     grouped_data[month]['cruces'].append(cruce)
 
-                # Fill the missing months with total_cost=0 and cruces=0
+                # Fill the missing months with costo_total=0 and cruces=0
                 for month in range(1, 13):
                     month_str = str(month).zfill(2)
                     if month_str not in grouped_data:
-                        grouped_data[month_str] = { 'total_cost': 0, 'cruces': [] }
+                        grouped_data[month_str] = { 'costo_total': 0, 'cruces': [] }
 
                 grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
-                grouped_data = [{'month': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
+                grouped_data = [{'month': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
                 response_data = grouped_data
 
             elif group_by == "week":
@@ -112,18 +112,18 @@ class CrucesView(views.APIView):
                     date = datetime.fromisoformat(cruce['fecha'].replace('Z', ''))
                     week = date.strftime('%V')
                     if week not in grouped_data:
-                        grouped_data[week] = { 'total_cost': 0, 'cruces': [] }
-                    grouped_data[week]['total_cost'] += cruce['costo']
+                        grouped_data[week] = { 'costo_total': 0, 'cruces': [] }
+                    grouped_data[week]['costo_total'] += cruce['costo']
                     grouped_data[week]['cruces'].append(cruce)
 
-                # Fill the missing weeks with total_cost=0 and cruces=0
+                # Fill the missing weeks with costo_total=0 and cruces=0
                 for week in range(1, 53):
                     week_str = str(week).zfill(2)
                     if week_str not in grouped_data:
-                        grouped_data[week_str] = { 'total_cost': 0, 'cruces': [] }
+                        grouped_data[week_str] = { 'costo_total': 0, 'cruces': [] }
                 
                 grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
-                grouped_data = [{'week': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
+                grouped_data = [{'week': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
                 response_data = grouped_data
 
         return Response(response_data, status=status.HTTP_200_OK)
@@ -140,13 +140,13 @@ class CrucesByUnitView(views.APIView):
         for cruce in cruces:
             cruce.unidad.tag = cruce.unidad.tag if cruce.unidad.tag else 'Sin tag'
             if cruce.unidad.tag not in grouped_units:
-                grouped_units[cruce.unidad.tag] = { 'total_cost': 0, 'cruces': [], 'unidad': None }
-            grouped_units[cruce.unidad.tag]['total_cost'] += cruce.costo
+                grouped_units[cruce.unidad.tag] = { 'costo_total': 0, 'cruces': [], 'unidad': None }
+            grouped_units[cruce.unidad.tag]['costo_total'] += cruce.costo
             grouped_units[cruce.unidad.tag]['unidad'] = cruce.unidad.numero
             grouped_units[cruce.unidad.tag]['cruces'].append(OrdenCasetaSerializer(cruce).data)
 
-        grouped_units = [{'tag': key, 'total_cost': value['total_cost'], 'cruces': value['cruces'], 'unidad': value['unidad']} for key, value in grouped_units.items()]
-        grouped_units = sorted(grouped_units, key=lambda x: x['total_cost'], reverse=True)
+        grouped_units = [{'tag': key, 'costo_total': value['costo_total'], 'cruces': value['cruces'], 'unidad': value['unidad']} for key, value in grouped_units.items()]
+        grouped_units = sorted(grouped_units, key=lambda x: x['costo_total'], reverse=True)
         return Response(grouped_units, status=status.HTTP_200_OK)
     
 
@@ -164,12 +164,12 @@ class CrucesByOrderView(views.APIView):
             else:
                 numero = 'Sin orden'
             if numero not in grouped_orders:
-                grouped_orders[numero] = { 'total_cost': 0, 'cruces': []}
-            grouped_orders[numero]['total_cost'] += cruce.costo
+                grouped_orders[numero] = { 'costo_total': 0, 'cruces': []}
+            grouped_orders[numero]['costo_total'] += cruce.costo
             grouped_orders[numero]['cruces'].append(OrdenCasetaSerializer(cruce).data)
 
-        grouped_orders = [{'numero': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_orders.items()]
-        grouped_orders = sorted(grouped_orders, key=lambda x: x['total_cost'], reverse=True)
+        grouped_orders = [{'numero': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_orders.items()]
+        grouped_orders = sorted(grouped_orders, key=lambda x: x['costo_total'], reverse=True)
         return Response(grouped_orders, status=status.HTTP_200_OK)
     
 
@@ -187,11 +187,11 @@ class CrucesByCasetaView(views.APIView):
             else:
                 nombre = 'Sin caseta'
             if nombre not in grouped_casetas:
-                grouped_casetas[nombre] = { 'total_cost': 0, 'cruces': []}
-            grouped_casetas[nombre]['total_cost'] += cruce.costo
+                grouped_casetas[nombre] = { 'costo_total': 0, 'cruces': []}
+            grouped_casetas[nombre]['costo_total'] += cruce.costo
             grouped_casetas[nombre]['cruces'].append(OrdenCasetaSerializer(cruce).data)
 
-        grouped_casetas = [{'nombre': key, 'total_cost': value['total_cost'], 'cruces': value['cruces']} for key, value in grouped_casetas.items()]
-        grouped_casetas = sorted(grouped_casetas, key=lambda x: x['total_cost'], reverse=True)
+        grouped_casetas = [{'nombre': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_casetas.items()]
+        grouped_casetas = sorted(grouped_casetas, key=lambda x: x['costo_total'], reverse=True)
         return Response(grouped_casetas, status=status.HTTP_200_OK)
     

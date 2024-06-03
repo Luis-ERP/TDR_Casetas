@@ -57,6 +57,14 @@ class OrdenCaseta(models.Model):
     orden = models.ForeignKey('Orden', on_delete=models.CASCADE, null=True, blank=True)
     unidad = models.ForeignKey(UnidadTractor, on_delete=models.CASCADE, null=True, blank=True)
 
+    @property
+    def costo_esperado(self):
+        return self.caseta.costo
+    
+    @property
+    def diferencia(self):
+        return self.costo - self.costo_esperado
+
     def __str__(self) -> str:
         return f'{self.caseta} - {self.orden} ({self.id})'
     
@@ -74,6 +82,24 @@ class Orden(models.Model):
     lugar_destino = models.ForeignKey(Lugar, on_delete=models.CASCADE, related_name='lugar_destino_orden', null=True, blank=True)
     lugar_origen = models.ForeignKey(Lugar, on_delete=models.CASCADE, related_name='lugar_origen_orden', null=True, blank=True)
     unidad = models.ForeignKey(UnidadTractor, on_delete=models.CASCADE, null=True, blank=True)
+
+    @property
+    def get_cruces(self):
+        return self.cruces.all()
+    
+    @property
+    def costo_total(self):
+        cruces = self.get_cruces
+        return sum([cruce.costo for cruce in cruces])
+    
+    @property
+    def costo_esperado(self):
+        cruces = self.get_cruces
+        return sum([cruce.costo_esperado for cruce in cruces])
+
+    @property
+    def diferencia(self):
+        return self.costo_total - self.costo_esperado
 
     def __str__(self) -> str:
         return f'{self.numero} ({self.id})'

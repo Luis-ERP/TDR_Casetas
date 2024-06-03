@@ -39,7 +39,8 @@ export default function OrdersPage(props) {
         if (!order) return;
         getCruces({ orden: order.numero })
         .then(data => {
-            data = data.map(x => ({ ...x, fecha: new Date(x.fecha).toLocaleDateString() }));
+            data = data.sort((x, y) => new Date(x.fecha) <= new Date(y.fecha) ? 1 : -1)
+                       .map(x => ({ ...x, fecha: new Date(x.fecha).toLocaleDateString() }));
             setCruces(data);
         });
     }, [order]);
@@ -95,15 +96,15 @@ export default function OrdersPage(props) {
                                                 </tr>
                                                 <tr>
                                                     <th>Costo total esperado</th>
-                                                    <td></td>
+                                                    <td>$ {parseInt(order.costo_esperado)}.00</td>
                                                 </tr>
                                                 <tr>
                                                     <th>Costo total real</th>
-                                                    <td>$ {parseInt(order.total_cost)}.00</td>
+                                                    <td>$ {parseInt(order.costo_total)}.00</td>
                                                 </tr>
                                                 <tr>
                                                     <th>Costo diferencia</th>
-                                                    <td></td>
+                                                    <td>$ {parseInt(order.diferencia)}.00</td>
                                                 </tr>
                                             </tbody>
                                         }
@@ -134,25 +135,14 @@ export default function OrdersPage(props) {
                                                         cruces.map(cruce => (
                                                             <tr>
                                                                 <td>{cruce.caseta?.nombre}</td>
-                                                                <td></td>
+                                                                <td>$ {cruce.costo_esperado}.00</td>
                                                                 <td>$ {cruce.costo}.00</td>
                                                                 <td>$ {cruce.diferencia}.00</td>
                                                                 <td>{cruce.fecha}</td>
                                                             </tr>
                                                         ))
                                                     : <tr><td>No se encontraron cruces para esta orden.</td></tr>
-
                                                 }
-
-                                                <tr style={{ height: '20px' }} />
-                                                
-                                                <tr>
-                                                    <td><strong>Total</strong></td>
-                                                    <td>$ 500.50</td>
-                                                    <td>$ 512.12</td>
-                                                    <td>$ +12.00</td>
-                                                    <td></td>
-                                                </tr>
                                             </tbody>
                                         </Table>
                                     </>

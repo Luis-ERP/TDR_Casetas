@@ -28,7 +28,8 @@ class OrdenCasetaSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance, *args, **kwargs):
         data = super(OrdenCasetaSerializer, self).to_representation(instance, *args, **kwargs)
-        data['diferencia'] = 0
+        data['diferencia'] = instance.diferencia
+        data['costo_esperado'] = instance.costo_esperado
         return data
 
 
@@ -46,8 +47,8 @@ class UnidadTractorSerializer(serializers.ModelSerializer):
             response['ordenes'] = ordenes
             cruces = instance.cruces.filter(fecha__range=[start_dt, end_dt]).count()
             response['cruces'] = cruces
-            total_cost = sum([cruce.costo for cruce in instance.cruces.filter(fecha__range=[start_dt, end_dt])])
-            response['total_cost'] = total_cost
+            costo_total = sum([cruce.costo for cruce in instance.cruces.filter(fecha__range=[start_dt, end_dt])])
+            response['costo_total'] = costo_total
 
         return response
 
@@ -63,8 +64,7 @@ class OrdenSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         response = super().to_representation(instance)
-        cruces = instance.cruces.all()
-        response['cruces'] = cruces.count()
-        total_cost = sum([cruce.costo for cruce in cruces])
-        response['total_cost'] = total_cost
+        response['costo_total'] = instance.costo_total
+        response['costo_esperado'] = instance.costo_esperado
+        response['diferencia'] = instance.diferencia
         return response

@@ -59,7 +59,7 @@ export default function HomePage(props) {
             const crucesByMonth = data.map(value => {
                 return {
                     mes: monthsMapping[value.month],
-                    costo: value.total_cost
+                    costo: value.costo_total
                 };
             });
             setCrucesByMonth(crucesByMonth);
@@ -75,7 +75,7 @@ export default function HomePage(props) {
             const crucesByWeek = data.map(value => {
                 return {
                     semana: value.week,
-                    costo: value.total_cost
+                    costo: value.costo_total
                 };
             });
             setCrucesByWeek(crucesByWeek);
@@ -102,44 +102,44 @@ export default function HomePage(props) {
 
         getCrucesByUnidad({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
-            const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
+            const averageCost = parseInt(data.reduce((acc, value) => acc + value.costo_total, 0) / data.length);
             const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
             const averageRow = {
                 tag: 'average',
                 unidad: 'Promedio',
                 cruces: new Array(averageCruces),
-                total_cost: averageCost
+                costo_total: averageCost
             };
             data.push(averageRow);
-            const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
+            const sortedData = data.sort((a, b) => b.costo_total - a.costo_total);
             setUnits(sortedData);
         });
 
         getCrucesByOrden({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
-            const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
+            const averageCost = parseInt(data.reduce((acc, value) => acc + value.costo_total, 0) / data.length);
             const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
             const averageRow = {
                 numero: 'Promedio',
-                total_cost: averageCost,
+                costo_total: averageCost,
                 cruces: new Array(averageCruces),
             };
             data.push(averageRow);
-            const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
+            const sortedData = data.sort((a, b) => b.costo_total - a.costo_total);
             setOrders(sortedData);
         });
 
         getCrucesByCaseta({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
-            const averageCost = parseInt(data.reduce((acc, value) => acc + value.total_cost, 0) / data.length);
+            const averageCost = parseInt(data.reduce((acc, value) => acc + value.costo_total, 0) / data.length);
             const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
             const averageRow = {
                 nombre: 'Promedio',
-                total_cost: averageCost,
+                costo_total: averageCost,
                 cruces: new Array(averageCruces),
             };
             data.push(averageRow);
-            const sortedData = data.sort((a, b) => b.total_cost - a.total_cost);
+            const sortedData = data.sort((a, b) => b.costo_total - a.costo_total);
             setCasetas(sortedData);
         });
 
@@ -226,7 +226,7 @@ export default function HomePage(props) {
                                         <tr key={unit.tag}>
                                             <td className={unit.tag==='average'? 'promedio':''}>{unit.unidad}</td>
                                             <td className={unit.tag==='average'? 'promedio':''}>{unit.cruces.length || 0}</td>
-                                            <td className={unit.tag==='average'? 'promedio':''}>$ {unit.total_cost}</td>
+                                            <td className={unit.tag==='average'? 'promedio':''}>$ {unit.costo_total}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -255,7 +255,7 @@ export default function HomePage(props) {
                                         <tr key={i}>
                                             <td className={order.numero==='Promedio'? 'promedio':''}>{order.numero}</td>
                                             <td className={order.numero==='Promedio'? 'promedio':''}>{order.cruces.length || 0}</td>
-                                            <td className={order.numero==='Promedio'? 'promedio':''}>$ {order.total_cost}</td>
+                                            <td className={order.numero==='Promedio'? 'promedio':''}>$ {order.costo_total}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -284,7 +284,7 @@ export default function HomePage(props) {
                                         <tr key={i}>
                                             <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.nombre}</td>
                                             <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.cruces.length || 0}</td>
-                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>$ {caseta.total_cost}</td>
+                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>$ {caseta.costo_total}</td>
                                         </tr>
                                     ))}
                                 </tbody>

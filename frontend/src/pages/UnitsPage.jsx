@@ -192,7 +192,7 @@ export default function UnitsPage(props) {
                                                     <td>{unit.tag}</td>
                                                     <td>{unit?.ordenes}</td>
                                                     <td>{unit.cruces.length}</td>
-                                                    <td>$ {unit.total_cost}</td>
+                                                    <td>$ {unit.costo_total}</td>
                                                 </tr>
                                             ))}                                            
                                         </tbody>
@@ -307,7 +307,7 @@ export default function UnitsPage(props) {
                                                         <td>{order.lugar_origen}</td>
                                                         <td>{order.lugar_destino}</td>
                                                         <td>{order.cruces}</td>
-                                                        <td>$ {order.total_cost}</td>
+                                                        <td>$ {order.costo_total}</td>
                                                     </tr>
                                                 );
                                             })}
