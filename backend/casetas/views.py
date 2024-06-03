@@ -5,9 +5,11 @@ from django.db.models import Q
 import functools
 from casetas.models import (Orden, 
                             UnidadTractor, 
+                            Caseta,
                             OrdenCaseta)
 from casetas.serializers import (OrdenSerializer, 
                                 UnidadTractorSerializer, 
+                                CasetaSerializer,
                                 OrdenCasetaSerializer)
 from casetas.utils import parse_query_params
 from casetas.client.televia import TeleviaAPI
@@ -43,6 +45,26 @@ class UnitViewset(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True, context=context)
         return Response(serializer.data)
     
+
+class CasetaViewset(viewsets.ModelViewSet):
+    queryset = Caseta.objects.all()
+    serializer_class = CasetaSerializer
+
+    def partial_update(self, request, pk=None):
+        data = request.data
+        caseta = self.get_queryset().get(pk=pk)
+        caseta.nombre = data.get('nombre', caseta.nombre)
+        caseta.costo = data.get('costo', caseta.costo)
+        caseta.save()
+        
+        lugar = caseta.lugar
+        lugar.estado = data.get('lugar__estado', lugar.estado)
+        lugar.nombre_id = data.get('lugar__nombre_id', lugar.nombre_id)
+        lugar.save()
+
+        serializer = self.serializer_class(caseta)
+        return Response(serializer.data)
+
 
 class LoginWithTeleviaView(views.APIView):
     

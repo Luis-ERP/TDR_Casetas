@@ -5,6 +5,7 @@ import pandas as pd
 # Create your models here.
 class Lugar(models.Model):
     nombre = models.CharField(max_length=256, null=True, blank=True)
+    estado = models.CharField(max_length=256, null=True, blank=True)
     nombre_id = models.CharField(max_length=256, null=True, blank=True)
 
     def __str__(self) -> str:
