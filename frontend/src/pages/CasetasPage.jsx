@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Card, CardBody, Col, Container, Input, Row, Table, Form } from "reactstrap";
 import Swal from 'sweetalert2'
 import { getCasetas, updateCaseta, deleteCaseta } from "../client/casetas";
+import '../styles/casetaspage.scss'
 
 export default function CasetasPage(props) {
     const [casetas, setCasetas] = useState();
@@ -29,6 +30,12 @@ export default function CasetasPage(props) {
 
         updateCaseta(editingCaseta, data)
             .then(() => {
+                Swal.fire({
+                    title: '¡Caseta actualizada!',
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
                 setEditingCaseta(null);
                 getCasetas()
                     .then((data) => {
@@ -46,7 +53,7 @@ export default function CasetasPage(props) {
     const deleteCasetaOnClick = async (casetaId) => {
         const { isConfirmed } = await Swal.fire({
             title: '¿Estás seguro de que deseas eliminar la caseta?',
-            text: "¡No podrás revertir esto!",
+            text: "Toda la información relacionada con esta caseta también será eliminada. ¡No podrás revertir esto!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -73,7 +80,7 @@ export default function CasetasPage(props) {
     };
 
     return (
-        <Container>
+        <Container className="casetas-page">
             <Row>
                 <Col>
                     <Card>
@@ -141,15 +148,15 @@ export default function CasetasPage(props) {
                                                                 <td>
                                                                     {editingCaseta === caseta.id ? (
                                                                         <>
-                                                                            <Input type="submit" value="Guardar" />
-                                                                            <Button>Cancelar</Button>
+                                                                            <Input className="submit-input" type="submit" value="Guardar" />
+                                                                            <Button className="cancel-btn" onClick={() => setEditingCaseta(null)}>Cancelar</Button>
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <Button onClick={() => setEditingCaseta(caseta.id)}>
+                                                                            <Button className="edit-btn" onClick={() => setEditingCaseta(caseta.id)}>
                                                                                 Editar
                                                                             </Button>
-                                                                            <Button onClick={() => deleteCasetaOnClick(caseta.id)}>
+                                                                            <Button className="delete-btn" onClick={() => deleteCasetaOnClick(caseta.id)}>
                                                                                 Eliminar
                                                                             </Button>
                                                                         </>
