@@ -10,6 +10,8 @@ import {
     Input,
     Table
 } from "reactstrap";
+import { IoDownload } from "react-icons/io5";
+import { CSVLink } from "react-csv";
 import { useSearchParams } from "react-router-dom";
 import { getCrucesByUnidad } from "../client/cruces";
 import { getOrders } from "../client/orders";
@@ -42,6 +44,9 @@ export default function UnitsPage(props) {
                 params.fecha_inicio__lt = endOfMonth.toISOString();
             }
             getOrders(params).then((data) => {
+                data = data.sort((x, y) => new Date(x.fecha_inicio) <= new Date(y.fecha_inicio) ? 1 : -1)
+                       .map(x => ({ ...x, fecha_inicio: new Date(x.fecha_inicio).toLocaleString() }))
+                       .map(x => ({ ...x, fecha_fin: new Date(x.fecha_fin).toLocaleString() }));
                 setOrders(data);
             });
         }
@@ -103,9 +108,28 @@ export default function UnitsPage(props) {
                 <Col>
                     <Card>
                         <CardBody>
-                            <Row className='mb-4'>
+                            <Row className='mb-4 d-flex justify-content-between'>
                                 <Col>
                                     <h4>Económicos</h4>
+                                </Col>
+                                <Col className="d-flex justify-content-end">
+                                    <CSVLink
+                                    data={units.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                                    headers={[
+                                        { label: "Unidad", key: "unidad" },
+                                        { label: "Tag", key: "tag" },
+                                        { label: "Cruces", key: "cruces" },
+                                        { label: "Costo total", key: "costo_total" }
+                                    ]}
+                                    filename={`económicos-${month}/${year}.csv`}
+                                    className="btn btn-primary">
+                                        <span className="d-flex align-items-center">
+                                            <IoDownload />
+                                            <span className="pl-2">
+                                                Descargar CSV
+                                            </span>
+                                        </span>
+                                    </CSVLink>
                                 </Col>
                             </Row>
                             
@@ -177,7 +201,6 @@ export default function UnitsPage(props) {
                                             <tr>
                                                 <th>Unidad</th>
                                                 <th>Tag</th>
-                                                <th>Órdenes</th>
                                                 <th>Cruces</th>
                                                 <th>Costo total</th>
                                             </tr>
@@ -190,7 +213,6 @@ export default function UnitsPage(props) {
                                                 className="cursor-pointer">
                                                     <td>{unit.unidad}</td>
                                                     <td>{unit.tag}</td>
-                                                    <td>{unit?.ordenes}</td>
                                                     <td>{unit.cruces.length}</td>
                                                     <td>$ {unit.costo_total}</td>
                                                 </tr>
@@ -199,7 +221,7 @@ export default function UnitsPage(props) {
                                     </Table>
                                 </Col>
                                 <Col md={12} lg={6}>
-                                    <p>Gráfica de comparativa de costos por trailer</p>
+                                    <p>Gráfica de estadística descriptiva</p>
                                 </Col>
                             </Row>
                         </CardBody>
@@ -287,27 +309,25 @@ export default function UnitsPage(props) {
                                         <thead>
                                             <tr>
                                                 <th>Orden</th>
-                                                <th>Fecha</th>
-                                                <th>Fecha de inicio del viaje</th>
-                                                <th>Fecha de fin del viaje</th>
+                                                <th>Inicio del viaje</th>
+                                                <th>Fin del viaje</th>
                                                 <th>Origen</th>
                                                 <th>Destino</th>
-                                                <th>Casetas cobradas</th>
-                                                <th>Costo total</th>
+                                                <th>Esperado</th>
+                                                <th>Costo real</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {orders.map((order) => {
+                                            {orders.map((order, i) => {
                                                 return (
-                                                    <tr key={order.id} className="cursor-pointer">
+                                                    <tr key={i} className="cursor-pointer">
                                                         <td>{order.numero}</td>
-                                                        <td>{order.fecha}</td>
                                                         <td>{order.fecha_inicio}</td>
                                                         <td>{order.fecha_fin}</td>
-                                                        <td>{order.lugar_origen}</td>
-                                                        <td>{order.lugar_destino}</td>
-                                                        <td>{order.cruces}</td>
-                                                        <td>$ {order.costo_total}</td>
+                                                        <td>{order.lugar_origen.nombre}</td>
+                                                        <td>{order.lugar_destino.nombre}</td>
+                                                        <td>$ {order.costo_esperado}.00</td>
+                                                        <td>$ {order.costo_total}.00</td>
                                                     </tr>
                                                 );
                                             })}

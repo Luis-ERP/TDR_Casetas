@@ -16,6 +16,8 @@ import {
     getCrucesByOrden,
     getCrucesByCaseta 
 } from '../client/cruces';
+import { CSVLink } from "react-csv";
+import { IoDownload } from "react-icons/io5";
 import StackedBarChart from '../components/widgets/StackedBarChart';
 import '../styles/homepage.scss';
 
@@ -208,9 +210,26 @@ export default function HomePage(props) {
             <Row>
                 <Col>
                     <Card className='costs-per-unit-card'>
-                        <CardHeader>
-                            <h4 className='d-inline px-2'>Gastos por unidad</h4>
-                            <p className='d-inline'>({selectedPeriod})</p>
+                        <CardHeader className='d-flex justify-content-between align-items-center'>
+                            <span>
+                                <h4 className='d-inline px-2'>Gastos por unidad</h4>
+                                <p className='d-inline'>({selectedPeriod})</p>
+                            </span>
+                            <CSVLink
+                            data={units.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                            headers={[
+                                { label: "Unidad", key: "unidad" },
+                                { label: "Tag", key: "tag" },
+                                { label: "Cruces", key: "cruces" },
+                                { label: "Costo total", key: "costo_total" }
+                            ]}
+                            filename={`económicos.csv`}
+                            className="btn btn-primary">
+                                <span className="d-flex align-items-center">
+                                    <IoDownload style={{ marginRight: '0.2rem' }} />
+                                    <span className="pl-2">Descargar</span>
+                                </span>
+                            </CSVLink>
                         </CardHeader>
                         <CardBody>
                             <Table>
@@ -237,9 +256,25 @@ export default function HomePage(props) {
 
                 <Col>
                     <Card className='costs-per-order-card'>
-                        <CardHeader>
-                            <h4 className='d-inline px-2'>Gastos por orden</h4>
-                            <p className='d-inline'>({selectedPeriod})</p>
+                        <CardHeader className='d-flex justify-content-between align-items-center'>
+                            <span>
+                                <h4 className='d-inline px-2'>Gastos por orden</h4>
+                                <p className='d-inline'>({selectedPeriod})</p>
+                            </span>
+                            <CSVLink
+                            data={orders.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                            headers={[
+                                { label: "Orden", key: "numero" },
+                                { label: "Cruces", key: "cruces" },
+                                { label: "Costo total", key: "costo_total" }
+                            ]}
+                            filename={`ordenes.csv`}
+                            className="btn btn-primary">
+                                <span className="d-flex align-items-center">
+                                    <IoDownload style={{ marginRight: '0.2rem' }} />
+                                    <span className="pl-2">Descargar</span>
+                                </span>
+                            </CSVLink>
                         </CardHeader>
                         <CardBody>
                             <Table>
@@ -266,9 +301,25 @@ export default function HomePage(props) {
 
                 <Col>
                     <Card className='costs-per-route-card'>
-                        <CardHeader>
-                            <h4 className='d-inline px-2'>Gastos por caseta</h4>
-                            <p className='d-inline'>({selectedPeriod})</p>
+                        <CardHeader className='d-flex justify-content-between align-items-center'>
+                            <span>
+                                <h4 className='d-inline px-2'>Gastos por caseta</h4>
+                                <p className='d-inline'>({selectedPeriod})</p>
+                            </span>
+                            <CSVLink
+                            data={casetas.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                            headers={[
+                                { label: "Caseta", key: "nombre" },
+                                { label: "Cruces", key: "cruces" },
+                                { label: "Costo total", key: "costo_total" }
+                            ]}
+                            filename={`casetas.csv`}
+                            className="btn btn-primary">
+                                <span className="d-flex align-items-center">
+                                    <IoDownload style={{ marginRight: '0.2rem' }} />
+                                    <span className="pl-2">Descargar</span>
+                                </span>
+                            </CSVLink>
                         </CardHeader>
                         <CardBody>
                             <Table>
