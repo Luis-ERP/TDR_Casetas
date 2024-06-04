@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Luis-ERP/TDR_Casetas/static/css/main.6e133ced.css",
+    "main.js": "/Luis-ERP/TDR_Casetas/static/js/main.84c0ea54.js",
+    "index.html": "/Luis-ERP/TDR_Casetas/index.html",
+    "main.6e133ced.css.map": "/Luis-ERP/TDR_Casetas/static/css/main.6e133ced.css.map",
+    "main.84c0ea54.js.map": "/Luis-ERP/TDR_Casetas/static/js/main.84c0ea54.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6e133ced.css",
+    "static/js/main.84c0ea54.js"
+  ]
+}
