@@ -15,6 +15,17 @@ export async function getRutas(params = {}) {
     }
 }
 
+export async function getRuta(id, params = {}) {
+    const endpoint = objectToUrlQueryString(`${baseURL}/casetas/rutas/${id}/`, params);
+    try {
+        const response = await axios.get(endpoint);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
 export async function updateRuta(id, data) {
     try {
         const response = await axios.patch(`${baseURL}/casetas/rutas/${id}/`, data);

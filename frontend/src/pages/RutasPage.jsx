@@ -4,7 +4,8 @@ import { CSVLink } from "react-csv";
 import { IoDownload } from 'react-icons/io5';
 import Swal from 'sweetalert2';
 import { getRutas, updateRuta, deleteRuta } from "../client/rutas";
-import '../styles/casetaspage.scss';
+import EditRutaModal from "../modals/EditRutaModal";
+import '../styles/rutaspage.scss';
 
 export default function RutasPage(props) {
     const [rutas, setRutas] = useState();
@@ -82,7 +83,7 @@ export default function RutasPage(props) {
     };
 
     return (
-        <Container className="rutas-page">
+        <Container className="rutas-page p-3">
             <Row>
                 <Col>
                     <Card>
@@ -126,41 +127,14 @@ export default function RutasPage(props) {
                                                     <th>Ruta</th>
                                                     <th>Origen</th>
                                                     <th>Destino</th>
+                                                    <th>Acciones</th>
                                                 </tr>
                                                 {rutas &&
                                                     rutas.map((ruta) => (
                                                             <tr key={ruta.id}>
-                                                                {editingRuta === ruta.id ? (
-                                                                    <>
-                                                                        <td>
-                                                                            <Input
-                                                                                type="text"
-                                                                                name="nombre"
-                                                                                defaultValue={ruta.nombre}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <Input
-                                                                                type="text"
-                                                                                name="lugar"
-                                                                                defaultValue={ruta.lugar.nombre_id}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <Input
-                                                                                type="text"
-                                                                                name="estado"
-                                                                                defaultValue={ruta.lugar.estado}
-                                                                            />
-                                                                        </td>
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <td>{ruta.nombre}</td>
-                                                                        <td>{ruta.lugar_origen.nombre}</td>
-                                                                        <td>{ruta.lugar_destino.nombre}</td>
-                                                                    </>
-                                                                )}
+                                                                <td>{ruta.nombre}</td>
+                                                                <td>{ruta.lugar_origen.nombre}</td>
+                                                                <td>{ruta.lugar_destino.nombre}</td>
                                                                 <td>
                                                                     {editingRuta === ruta.id ? (
                                                                         <>
@@ -190,6 +164,12 @@ export default function RutasPage(props) {
                     </Card>
                 </Col>
             </Row>
+
+            <EditRutaModal
+                isOpen={editingRuta !== null}
+                toggle={() => setEditingRuta(null)}
+                rutaId={editingRuta}
+            />
         </Container>
     );
 }
