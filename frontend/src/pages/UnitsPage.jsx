@@ -125,7 +125,7 @@ export default function UnitsPage(props) {
                                     className="btn btn-primary">
                                         <span className="d-flex align-items-center">
                                             <IoDownload />
-                                            <span className="pl-2">
+                                            <span style={{ padingLeft: '0.2rem' }}>
                                                 Descargar CSV
                                             </span>
                                         </span>
@@ -233,11 +233,37 @@ export default function UnitsPage(props) {
                 <Col>
                     <Card>
                         <CardBody>
-                            <Row className='mb-4'>
+                            <Row className='mb-4 justify-content-between d-flex'>
                                 <Col>
                                     <h4>
                                         Buscar órdenes
                                     </h4>
+                                </Col>
+                                <Col className="d-flex justify-content-end">
+                                    <CSVLink
+                                    data={orders.map(o => ({ 
+                                        ...o, 
+                                        lugar_origen: o.lugar_origen.nombre,
+                                        lugar_destino: o.lugar_destino.nombre,
+                                     }))}
+                                    headers={[
+                                        { label: "Orden", key: "numero" },
+                                        { label: "Fecha inicio", key: "fecha_inicio" },
+                                        { label: "Fecha fin", key: "fecha_fin" },
+                                        { label: "Origen", key: "lugar_origen" },
+                                        { label: "Destino", key: "lugar_destino" },
+                                        { label: "Costo esperado", key: "costo_esperado" },
+                                        { label: "Costo total", key: "costo_total" }
+                                    ]}
+                                    filename={`ordenes ${selectedUnit} ${month} ${year}.csv`}
+                                    className="btn btn-primary">
+                                        <span className="d-flex align-items-center">
+                                            <IoDownload />
+                                            <span style={{ padingLeft: '0.2rem' }}>
+                                                Descargar CSV
+                                            </span>
+                                        </span>
+                                    </CSVLink>
                                 </Col>
                             </Row>
                             <Row>

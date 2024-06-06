@@ -3,6 +3,7 @@ from django.urls import re_path, include
 from casetas.views import (OrderViewset, 
                            CasetaViewset,
                            UnitViewset,
+                           RutasViewset,
                            LoginWithTeleviaView, 
                            CrucesByUnitView,
                            CrucesByOrderView,
@@ -13,6 +14,8 @@ router = DefaultRouter()
 router.register(r'ordenes', OrderViewset, basename='ordenes')
 router.register(r'unidades', UnitViewset, basename='unidades')
 router.register(r'casetas', CasetaViewset, basename='casetas')
+router.register(r'rutas', RutasViewset, basename='rutas')
+
 
 urlpatterns = [
     re_path(r'^login$', LoginWithTeleviaView.as_view(), name='login_with_televia'),

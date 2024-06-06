@@ -17,6 +17,10 @@ class CasetaSerializer(serializers.ModelSerializer):
 
 
 class RutaSerializer(serializers.ModelSerializer):
+    lugar_origen = LugarSerializer()
+    lugar_destino = LugarSerializer()
+    casetas = CasetaSerializer(many=True)
+    
     class Meta:
         model = Ruta
         fields = '__all__'

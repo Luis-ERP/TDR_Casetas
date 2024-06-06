@@ -32,11 +32,12 @@ class Ruta(models.Model):
     lugar_destino = models.ForeignKey(Lugar, on_delete=models.CASCADE, related_name='lugar_destino') 
     available = models.BooleanField(default=True)
 
-    def get_total_cost(self):
+    @property
+    def costo_esperado(self):
         return sum([caseta.costo for caseta in self.casetas.all()])
 
     def __str__(self) -> str:
-        return f'{self.nombre} ${self.get_total_cost()} [{self.id}]'
+        return f'{self.nombre} ${self.costo_esperado} [{self.id}]'
 
 
 class UnidadTractor(models.Model):
@@ -89,14 +90,17 @@ class Orden(models.Model):
         return self.cruces.all()
     
     @property
+    def cruces_esperados(self):
+        return self.ruta.casetas.all()
+    
+    @property
     def costo_total(self):
         cruces = self.get_cruces
         return sum([cruce.costo for cruce in cruces])
     
     @property
     def costo_esperado(self):
-        cruces = self.get_cruces
-        return sum([cruce.costo_esperado for cruce in cruces])
+        return sum([cruce.costo for cruce in self.cruces_esperados.all()])
 
     @property
     def diferencia(self):

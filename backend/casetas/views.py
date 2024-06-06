@@ -5,11 +5,13 @@ from django.db.models import Q
 import functools
 from casetas.models import (Orden, 
                             UnidadTractor, 
+                            Ruta,
                             Caseta,
                             OrdenCaseta)
 from casetas.serializers import (OrdenSerializer, 
                                 UnidadTractorSerializer, 
                                 CasetaSerializer,
+                                RutaSerializer,
                                 OrdenCasetaSerializer)
 from casetas.utils import parse_query_params
 from casetas.client.televia import TeleviaAPI
@@ -64,6 +66,11 @@ class CasetaViewset(viewsets.ModelViewSet):
 
         serializer = self.serializer_class(caseta)
         return Response(serializer.data)
+
+
+class RutasViewset(viewsets.ModelViewSet):
+    queryset = Ruta.objects.all()
+    serializer_class = RutaSerializer
 
 
 class LoginWithTeleviaView(views.APIView):

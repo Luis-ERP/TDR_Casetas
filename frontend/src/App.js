@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import OrdersPage from './pages/OrdersPage';
 import UnitsPage from './pages/UnitsPage';
 import CasetasPage from './pages/CasetasPage';
+import RutasPage from './pages/RutasPage';
 import LoginPage from './pages/LoginPage';
 import useSession from './hooks/useSession';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
@@ -33,6 +34,7 @@ function App() {
 								: page === 'unidades' ? <UnitsPage changeLink={setPage} />
 								: page === 'ordenes'  ? <OrdersPage changeLink={setPage} />
 								: page === 'casetas'  ? <CasetasPage changeLink={setPage} />
+								: page === 'rutas'  ? <RutasPage changeLink={setPage} />
 								: <></>
 								}
 							</div>

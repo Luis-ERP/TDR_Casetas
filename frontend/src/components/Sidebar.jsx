@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Nav, NavItem, NavLink } from 'reactstrap';
-import { IoReorderThree, IoGrid, IoBarChart, IoBus, IoDocuments, IoCar } from "react-icons/io5";
+import { IoReorderThree, IoGrid, IoBarChart, IoBus, IoDocuments, IoCar, IoMap } from "react-icons/io5";
 import '../styles/sidebar.scss';
 
 export default function Sidebar({activeLink, setActiveLink}) {
@@ -48,10 +48,10 @@ export default function Sidebar({activeLink, setActiveLink}) {
                 </NavItem>
                 <NavItem>
                     <NavLink
-                    onClick={() => setActiveLink('reportes')} 
-                    active={activeLink === 'reportes'} >
-                        <IoBarChart />
-                        <span style={{ display: !collapsed ? 'inline' : 'none' }}>Reportes</span>
+                    onClick={() => setActiveLink('rutas')} 
+                    active={activeLink === 'rutas'} >
+                        <IoMap />
+                        <span style={{ display: !collapsed ? 'inline' : 'none' }}>Rutas</span>
                     </NavLink>
                 </NavItem>
             </Nav>

@@ -3,17 +3,17 @@ import { Button, Card, CardBody, Col, Container, Input, Row, Table, Form } from 
 import { CSVLink } from "react-csv";
 import { IoDownload } from 'react-icons/io5';
 import Swal from 'sweetalert2';
-import { getCasetas, updateCaseta, deleteCaseta } from "../client/casetas";
+import { getRutas, updateRuta, deleteRuta } from "../client/rutas";
 import '../styles/casetaspage.scss';
 
-export default function CasetasPage(props) {
-    const [casetas, setCasetas] = useState();
-    const [editingCaseta, setEditingCaseta] = useState(null);
+export default function RutasPage(props) {
+    const [rutas, setRutas] = useState();
+    const [editingRuta, setEditingRuta] = useState(null);
 
     useEffect(() => {
-        getCasetas()
+        getRutas()
             .then((data) => {
-                setCasetas(data);
+                setRutas(data);
             })
             .catch((error) => {
                 console.error(error);
@@ -30,7 +30,7 @@ export default function CasetasPage(props) {
             costo: event.target.costo.value,
         };
 
-        updateCaseta(editingCaseta, data)
+        updateRuta(editingRuta, data)
             .then(() => {
                 Swal.fire({
                     title: '¡Caseta actualizada!',
@@ -38,10 +38,10 @@ export default function CasetasPage(props) {
                     timer: 1500,
                     showConfirmButton: false
                 });
-                setEditingCaseta(null);
-                getCasetas()
+                setEditingRuta(null);
+                getRutas()
                     .then((data) => {
-                        setCasetas(data);
+                        setRutas(data);
                     })
                     .catch((error) => {
                         console.error(error);
@@ -54,8 +54,8 @@ export default function CasetasPage(props) {
 
     const deleteCasetaOnClick = async (casetaId) => {
         const { isConfirmed } = await Swal.fire({
-            title: '¿Estás seguro de que deseas eliminar la caseta?',
-            text: "Toda la información relacionada con esta caseta también será eliminada. ¡No podrás revertir esto!",
+            title: '¿Estás seguro de que deseas eliminar la ruta?',
+            text: "Toda la información relacionada con esta ruta también será eliminada. ¡No podrás revertir esto!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
@@ -65,11 +65,11 @@ export default function CasetasPage(props) {
         });
         if (!isConfirmed) return;
         
-        deleteCaseta(casetaId)
+        deleteRuta(casetaId)
             .then(() => {
-                getCasetas()
+                getRutas()
                     .then((data) => {
-                        setCasetas(data);
+                        setRutas(data);
                     })
                     .catch((error) => {
                         console.error(error);
@@ -78,11 +78,11 @@ export default function CasetasPage(props) {
             .catch((error) => {
                 console.error(error);
             });
-        setEditingCaseta(null);
+        setEditingRuta(null);
     };
 
     return (
-        <Container className="casetas-page">
+        <Container className="rutas-page">
             <Row>
                 <Col>
                     <Card>
@@ -91,22 +91,20 @@ export default function CasetasPage(props) {
                                 <Col>
                                     <h4>Casetas registradas</h4>
                                 </Col>
-                                {casetas &&
+                                {rutas &&
                                     <Col className="d-flex justify-content-end">
                                         <CSVLink
-                                        data={casetas.map(c => ({ 
+                                        data={rutas.map(c => ({ 
                                             ...c, 
-                                            clave: c.lugar.nombre_id,
-                                            estado: c.lugar.estado,
-                                            costo: `$ ${c.costo}.00`
+                                            lugar_origen: c.lugar_origen.nombre,
+                                            lugar_destino: c.lugar_destino.nombre,
                                         }))}
                                         headers={[
-                                            { label: "Caseta", key: "nombre" },
-                                            { label: "Clave", key: "clave" },
-                                            { label: "Estado", key: "estado" },
-                                            { label: "Costo", key: "costo" },
+                                            { label: "Ruta", key: "nombre" },
+                                            { label: "Origen", key: "lugar_origen" },
+                                            { label: "Destino", key: "lugar_destino" },
                                         ]}
-                                        filename={`casetas.csv`}
+                                        filename={`rutas.csv`}
                                         className="btn btn-primary">
                                             <span className="d-flex align-items-center">
                                                 <IoDownload />
@@ -125,66 +123,56 @@ export default function CasetasPage(props) {
                                         <Table>
                                             <tbody>
                                                 <tr>
-                                                    <th>Nombre</th>
-                                                    <th>Clave</th>
-                                                    <th>Estado</th>
-                                                    <th>Costo esperado</th>
-                                                    <th>Acciones</th>
+                                                    <th>Ruta</th>
+                                                    <th>Origen</th>
+                                                    <th>Destino</th>
                                                 </tr>
-                                                {casetas &&
-                                                    casetas.map((caseta) => (
-                                                            <tr key={caseta.id}>
-                                                                {editingCaseta === caseta.id ? (
+                                                {rutas &&
+                                                    rutas.map((ruta) => (
+                                                            <tr key={ruta.id}>
+                                                                {editingRuta === ruta.id ? (
                                                                     <>
                                                                         <td>
                                                                             <Input
                                                                                 type="text"
                                                                                 name="nombre"
-                                                                                defaultValue={caseta.nombre}
+                                                                                defaultValue={ruta.nombre}
                                                                             />
                                                                         </td>
                                                                         <td>
                                                                             <Input
                                                                                 type="text"
                                                                                 name="lugar"
-                                                                                defaultValue={caseta.lugar.nombre_id}
+                                                                                defaultValue={ruta.lugar.nombre_id}
                                                                             />
                                                                         </td>
                                                                         <td>
                                                                             <Input
                                                                                 type="text"
                                                                                 name="estado"
-                                                                                defaultValue={caseta.lugar.estado}
-                                                                            />
-                                                                        </td>
-                                                                        <td>
-                                                                            <Input
-                                                                                type="number"
-                                                                                name="costo"
-                                                                                defaultValue={caseta.costo}
+                                                                                defaultValue={ruta.lugar.estado}
                                                                             />
                                                                         </td>
                                                                     </>
                                                                 ) : (
                                                                     <>
-                                                                        <td>{caseta.nombre}</td>
-                                                                        <td>{caseta.lugar.nombre_id}</td>
-                                                                        <td>{caseta.lugar.estado}</td>
-                                                                        <td>$ {caseta.costo}.00</td>
+                                                                        <td>{ruta.nombre}</td>
+                                                                        <td>{ruta.lugar_origen.nombre}</td>
+                                                                        <td>{ruta.lugar_destino.nombre}</td>
                                                                     </>
                                                                 )}
                                                                 <td>
-                                                                    {editingCaseta === caseta.id ? (
+                                                                    {editingRuta === ruta.id ? (
                                                                         <>
                                                                             <Input className="submit-input" type="submit" value="Guardar" />
-                                                                            <Button className="cancel-btn" onClick={() => setEditingCaseta(null)}>Cancelar</Button>
+                                                                            <Button className="cancel-btn" onClick={() => setEditingRuta(null)}>Cancelar</Button>
                                                                         </>
                                                                     ) : (
                                                                         <>
-                                                                            <Button className="edit-btn" onClick={() => setEditingCaseta(caseta.id)}>
+                                                                            <Button className="edit-btn" onClick={() => setEditingRuta(ruta.id)}>
                                                                                 Editar
                                                                             </Button>
-                                                                            <Button className="delete-btn" onClick={() => deleteCasetaOnClick(caseta.id)}>
+                                                                            <Button className="delete-btn" onClick={() => deleteCasetaOnClick(ruta.id)}>
                                                                                 Eliminar
                                                                             </Button>
                                                                         </>
