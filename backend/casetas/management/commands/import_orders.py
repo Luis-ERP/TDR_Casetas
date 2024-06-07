@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from casetas.models import Orden, Lugar, Unidad, Ruta, Cruce
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
+
 
 class Command(BaseCommand):
     help = 'Import data from a CSV file into a Pandas DataFrame'
@@ -13,13 +14,17 @@ class Command(BaseCommand):
         
         with transaction.atomic():
             for index, row in df.iterrows():
+                numero = row['ord_number']
+                orden = Orden.objects.filter(numero=numero).first()
+                if orden:
+                    continue
+
                 lugar_origen, created = Lugar.objects.get_or_create(nombre=row['origin_cmp_name'])
                 lugar_destino, created = Lugar.objects.get_or_create(nombre=row['dest_cmp_name'])
                 ruta = Ruta.objects.filter(
                     lugar_origen=lugar_origen,
                     lugar_destino=lugar_destino
                 ).first()
-                numero = row['ord_number']
 
                 # Unidad
                 id_unidad = int(row['ord_tractor'])
@@ -27,11 +32,15 @@ class Command(BaseCommand):
                 if not unidad:
                     unidad = Unidad.objects.create(numero=id_unidad)
 
-                fecha_inicio = datetime.strptime(row['origin_earliest'], '%m/%d/%Y %H:%M')
-                fecha_fin = datetime.strptime(row['dest_latest'], '%m/%d/%Y %H:%M')
+                fecha  = datetime.strptime(row['ord_date'], '%m/%d/%Y %H:%M:%S')
+                fecha_inicio = fecha
+                fecha_inicio = fecha_inicio.replace(hour=0, minute=0, second=0, microsecond=0)
+                fecha_fin = fecha
+                fecha_fin = fecha_fin.replace(hour=23, minute=59, second=59, microsecond=999999)
 
                 orden, created = Orden.objects.get_or_create(
                     numero=numero,
+                    fecha=fecha,
                     fecha_inicio=fecha_inicio,
                     fecha_fin=fecha_fin,
                     lugar_origen=lugar_origen,
@@ -41,10 +50,11 @@ class Command(BaseCommand):
                 )
 
                 # Buscar y asociar cruces de casetas
-                fecha_inicio = orden.fecha_inicio - timedelta(hours=10)
-                fecha_fin = orden.fecha_fin + timedelta(hours=10)
                 cruces = Cruce.objects.filter(
-                    fecha__range=(fecha_inicio, fecha_fin),
-                    unidad=unidad
+                    fecha__gte=fecha_inicio,
+                    fecha__lte=fecha_fin,
+                    unidad=unidad,
+                    orden__isnull=True
                 )
+                self.stdout.write(f'Orden {orden} - {cruces.count()} cruces')
                 cruces.update(orden=orden)

@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from casetas.models import Orden, Lugar, Unidad, Caseta, Cruce
-from datetime import datetime, timedelta
+from datetime import datetime
 import pandas as pd
+
 
 class Command(BaseCommand):
     help = 'Import data from a CSV file into a Pandas DataFrame'
@@ -17,6 +18,11 @@ class Command(BaseCommand):
         new_cruces = []
         with transaction.atomic():
             for index, row in df.iterrows():
+                ext_id = row['idViaje']
+                cruce = Cruce.objects.filter(ext_id=ext_id).first()
+                if cruce:
+                    continue
+
                 caseta = Caseta.objects.filter(nombre=row['entrada']).first()
                 costo = float(row['monto'])
                 if not caseta:
@@ -28,7 +34,14 @@ class Command(BaseCommand):
                     unidad = Unidad.objects.create(tag=row['viajesTag'])
 
                 fecha = datetime.strptime(row['fechIni'], '%d/%m/%Y %H:%M:%S')
-                orden = Orden.objects.filter(unidad=unidad, fecha__range=(fecha - timedelta(days=1), fecha + timedelta(days=1))).first()
-                cruce = Cruce.objects.create(fecha=fecha, costo=costo, caseta=caseta, orden=orden, unidad=unidad)
+                orden = Orden.objects.filter(unidad=unidad, 
+                                             fecha_inicio__lte=fecha,
+                                             fecha_fin__gte=fecha).first()
+                cruce = Cruce.objects.create(fecha=fecha, 
+                                             ext_id=ext_id,
+                                             costo=costo, 
+                                             caseta=caseta, 
+                                             orden=orden, 
+                                             unidad=unidad)
                 new_cruces.append(cruce)
 

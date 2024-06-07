@@ -53,6 +53,7 @@ class Unidad(models.Model):
 
 
 class Cruce(models.Model):
+    ext_id = models.CharField(max_length=256, null=True, blank=True)
     fecha = models.DateTimeField()
     costo = models.FloatField(null=True, blank=True)
     caseta = models.ForeignKey(Caseta, on_delete=models.CASCADE)
