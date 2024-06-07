@@ -44,6 +44,7 @@ export default function UnitsPage(props) {
                 params.fecha_inicio__lt = endOfMonth.toISOString();
             }
             getOrders(params).then((data) => {
+                console.log(data);
                 data = data.sort((x, y) => new Date(x.fecha_inicio) <= new Date(y.fecha_inicio) ? 1 : -1)
                        .map(x => ({ ...x, fecha_inicio: new Date(x.fecha_inicio).toLocaleString() }))
                        .map(x => ({ ...x, fecha_fin: new Date(x.fecha_fin).toLocaleString() }));

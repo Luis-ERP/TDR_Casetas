@@ -4,24 +4,24 @@ from django.db import models
 from django.db.models import Q
 import functools
 from casetas.models import (Orden, 
-                            UnidadTractor, 
+                            Unidad, 
                             Ruta,
                             Caseta,
-                            OrdenCaseta)
+                            Cruce)
 from casetas.serializers import (OrdenSerializer, 
                                 UnidadTractorSerializer, 
                                 CasetaSerializer,
                                 RutaSerializer,
                                 OrdenCasetaSerializer)
 from casetas.utils import parse_query_params
+from casetas.mixins import GetQuerysetMixin
 from casetas.client.televia import TeleviaAPI
 from datetime import datetime
 
 
-class OrderViewset(viewsets.ModelViewSet):
+class OrderViewset(viewsets.ModelViewSet, GetQuerysetMixin):
     queryset = Orden.objects.all()
     serializer_class = OrdenSerializer
-
 
     def retrieve(self, request, pk=None):
         qs = self.get_queryset().get(numero=pk)
@@ -29,8 +29,8 @@ class OrderViewset(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 
-class UnitViewset(viewsets.ModelViewSet):
-    queryset = UnidadTractor.objects.all()
+class UnitViewset(viewsets.ModelViewSet, GetQuerysetMixin):
+    queryset = Unidad.objects.all()
     serializer_class = UnidadTractorSerializer
 
     def list(self, request):
@@ -48,7 +48,7 @@ class UnitViewset(viewsets.ModelViewSet):
         return Response(serializer.data)
     
 
-class CasetaViewset(viewsets.ModelViewSet):
+class CasetaViewset(viewsets.ModelViewSet, GetQuerysetMixin):
     queryset = Caseta.objects.all()
     serializer_class = CasetaSerializer
 
@@ -68,7 +68,7 @@ class CasetaViewset(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class RutasViewset(viewsets.ModelViewSet):
+class RutasViewset(viewsets.ModelViewSet, GetQuerysetMixin):
     queryset = Ruta.objects.all()
     serializer_class = RutaSerializer
 
@@ -109,7 +109,7 @@ class CrucesView(views.APIView):
         else:
             return Response({ "error": "Missing query parameters" }, status=status.HTTP_400_BAD_REQUEST)
         
-        cruces = OrdenCaseta.objects.filter(**qs_params)
+        cruces = Cruce.objects.filter(**qs_params)
         serialized_cruces = OrdenCasetaSerializer(cruces, many=True).data
         response_data = serialized_cruces
 
@@ -164,7 +164,7 @@ class CrucesByUnitView(views.APIView):
         start_dt = params.get('start_dt')
         end_dt = params.get('end_dt')
 
-        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        cruces = Cruce.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
         grouped_units = {}
         for cruce in cruces:
             cruce.unidad.tag = cruce.unidad.tag if cruce.unidad.tag else 'Sin tag'
@@ -185,7 +185,7 @@ class CrucesByOrderView(views.APIView):
         start_dt = params.get('start_dt')
         end_dt = params.get('end_dt')
 
-        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        cruces = Cruce.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
         grouped_orders = {}
         for cruce in cruces:
             if cruce.orden:
@@ -208,7 +208,7 @@ class CrucesByCasetaView(views.APIView):
         start_dt = params.get('start_dt')
         end_dt = params.get('end_dt')
 
-        cruces = OrdenCaseta.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
+        cruces = Cruce.objects.filter(fecha__gte=start_dt, fecha__lt=end_dt)
         grouped_casetas = {}
         for cruce in cruces:
             if cruce.caseta:

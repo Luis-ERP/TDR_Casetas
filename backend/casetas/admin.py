@@ -1,5 +1,5 @@
 from django.contrib import admin
-from casetas.models import Lugar, Caseta, Ruta, OrdenCaseta, Orden, UnidadTractor
+from casetas.models import Lugar, Caseta, Ruta, Cruce, Orden, Unidad
 
 # Register your models here.
 @admin.register(Lugar)
@@ -15,7 +15,7 @@ class CasetaAdmin(admin.ModelAdmin):
 class RutaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'lugar_origen', 'lugar_destino', 'available')
 
-@admin.register(OrdenCaseta)
+@admin.register(Cruce)
 class OrdenCasetaAdmin(admin.ModelAdmin):
     list_display = ('fecha', 'caseta', 'orden', 'unidad', 'costo')
     search_fields = ('caseta__nombre', 'orden__numero')
@@ -26,7 +26,7 @@ class OrdenAdmin(admin.ModelAdmin):
     search_fields = ('numero', 'ruta__nombre', 'unidad__tag')
 
 
-@admin.register(UnidadTractor)
+@admin.register(Unidad)
 class UnidadTractorAdmin(admin.ModelAdmin):
     list_display = ('tag', 'numero')
     list_filter = ('numero','tag')

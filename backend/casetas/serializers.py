@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Lugar, Caseta, Ruta, OrdenCaseta, Orden, UnidadTractor
+from casetas.models import Lugar, Caseta, Ruta, Cruce, Orden, Unidad
 
 class LugarSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,7 +30,7 @@ class OrdenCasetaSerializer(serializers.ModelSerializer):
     caseta = CasetaSerializer()
     
     class Meta:
-        model = OrdenCaseta
+        model = Cruce
         fields = '__all__'
 
     def to_representation(self, instance, *args, **kwargs):
@@ -42,7 +42,7 @@ class OrdenCasetaSerializer(serializers.ModelSerializer):
 
 class UnidadTractorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UnidadTractor
+        model = Unidad
         fields = '__all__'
         
     def to_representation(self, instance):
@@ -64,6 +64,7 @@ class OrdenSerializer(serializers.ModelSerializer):
     unidad = UnidadTractorSerializer()
     lugar_destino = LugarSerializer()
     lugar_origen = LugarSerializer()
+    ruta = RutaSerializer()
     
     class Meta:
         model = Orden

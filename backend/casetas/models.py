@@ -40,7 +40,7 @@ class Ruta(models.Model):
         return f'{self.nombre} ${self.costo_esperado} [{self.id}]'
 
 
-class UnidadTractor(models.Model):
+class Unidad(models.Model):
     tag = models.CharField(max_length=64, null=True, blank=True)
     numero = models.IntegerField(null=True, blank=True)
 
@@ -52,12 +52,12 @@ class UnidadTractor(models.Model):
         verbose_name_plural = 'unidades'
 
 
-class OrdenCaseta(models.Model):
+class Cruce(models.Model):
     fecha = models.DateTimeField()
     costo = models.FloatField(null=True, blank=True)
     caseta = models.ForeignKey(Caseta, on_delete=models.CASCADE)
     orden = models.ForeignKey('Orden', on_delete=models.CASCADE, null=True, blank=True)
-    unidad = models.ForeignKey(UnidadTractor, on_delete=models.CASCADE, null=True, blank=True)
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, null=True, blank=True)
 
     @property
     def costo_esperado(self):
@@ -83,7 +83,7 @@ class Orden(models.Model):
     ruta = models.ForeignKey(Ruta, on_delete=models.CASCADE, null=True, blank=True)
     lugar_destino = models.ForeignKey(Lugar, on_delete=models.CASCADE, related_name='lugar_destino_orden', null=True, blank=True)
     lugar_origen = models.ForeignKey(Lugar, on_delete=models.CASCADE, related_name='lugar_origen_orden', null=True, blank=True)
-    unidad = models.ForeignKey(UnidadTractor, on_delete=models.CASCADE, null=True, blank=True)
+    unidad = models.ForeignKey(Unidad, on_delete=models.CASCADE, null=True, blank=True)
 
     @property
     def get_cruces(self):

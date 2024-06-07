@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from casetas.models import UnidadTractor
+from casetas.models import Unidad
 import pandas as pd
 
 class Command(BaseCommand):
@@ -15,12 +15,12 @@ class Command(BaseCommand):
                 numero = row['Unidad']
                 tag = row['Tag']
 
-                unidad = UnidadTractor.objects.filter(numero=numero).first()
+                unidad = Unidad.objects.filter(numero=numero).first()
                 if not unidad:
-                    unidad = UnidadTractor.objects.create(tag=tag)
+                    unidad = Unidad.objects.create(tag=tag)
 
                 else:
-                    unidad = UnidadTractor.objects.create(tag=tag)
+                    unidad = Unidad.objects.create(tag=tag)
 
                 unidad.numero = numero
                 unidad.tag = tag
