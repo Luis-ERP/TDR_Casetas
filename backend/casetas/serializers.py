@@ -26,7 +26,7 @@ class RutaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OrdenCasetaSerializer(serializers.ModelSerializer):
+class CruceSerializer(serializers.ModelSerializer):
     caseta = CasetaSerializer()
     
     class Meta:
@@ -34,13 +34,14 @@ class OrdenCasetaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def to_representation(self, instance, *args, **kwargs):
-        data = super(OrdenCasetaSerializer, self).to_representation(instance, *args, **kwargs)
+        data = super(CruceSerializer, self).to_representation(instance, *args, **kwargs)
         data['diferencia'] = instance.diferencia
         data['costo_esperado'] = instance.costo_esperado
+        data['fecha'] = instance.fecha.strftime('%Y-%m-%dT%H:%M:%S')
         return data
 
 
-class UnidadTractorSerializer(serializers.ModelSerializer):
+class UnidadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Unidad
         fields = '__all__'
@@ -61,7 +62,7 @@ class UnidadTractorSerializer(serializers.ModelSerializer):
 
 
 class OrdenSerializer(serializers.ModelSerializer):
-    unidad = UnidadTractorSerializer()
+    unidad = UnidadSerializer()
     lugar_destino = LugarSerializer()
     lugar_origen = LugarSerializer()
     ruta = RutaSerializer()
@@ -75,4 +76,7 @@ class OrdenSerializer(serializers.ModelSerializer):
         response['costo_total'] = instance.costo_total
         response['costo_esperado'] = instance.costo_esperado
         response['diferencia'] = instance.diferencia
+        response['fecha_inicio'] = instance.fecha_inicio.strftime('%Y-%m-%dT%H:%M:%S')
+        response['fecha_fin'] = instance.fecha_fin.strftime('%Y-%m-%dT%H:%M:%S')
+        response['fecha'] = instance.fecha.strftime('%Y-%m-%dT%H:%M:%S')
         return response

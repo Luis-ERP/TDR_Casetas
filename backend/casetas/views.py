@@ -9,10 +9,10 @@ from casetas.models import (Orden,
                             Caseta,
                             Cruce)
 from casetas.serializers import (OrdenSerializer, 
-                                UnidadTractorSerializer, 
+                                UnidadSerializer, 
                                 CasetaSerializer,
                                 RutaSerializer,
-                                OrdenCasetaSerializer)
+                                CruceSerializer)
 from casetas.utils import parse_query_params
 from casetas.mixins import GetQuerysetMixin
 from casetas.client.televia import TeleviaAPI
@@ -31,7 +31,7 @@ class OrderViewset(viewsets.ModelViewSet, GetQuerysetMixin):
 
 class UnitViewset(viewsets.ModelViewSet, GetQuerysetMixin):
     queryset = Unidad.objects.all()
-    serializer_class = UnidadTractorSerializer
+    serializer_class = UnidadSerializer
 
     def list(self, request):
         queryset = self.get_queryset()
@@ -110,7 +110,7 @@ class CrucesView(views.APIView):
             return Response({ "error": "Missing query parameters" }, status=status.HTTP_400_BAD_REQUEST)
         
         cruces = Cruce.objects.filter(**qs_params)
-        serialized_cruces = OrdenCasetaSerializer(cruces, many=True).data
+        serialized_cruces = CruceSerializer(cruces, many=True).data
         response_data = serialized_cruces
 
         if "group_by" in params:
@@ -172,7 +172,7 @@ class CrucesByUnitView(views.APIView):
                 grouped_units[cruce.unidad.tag] = { 'costo_total': 0, 'cruces': [], 'unidad': None }
             grouped_units[cruce.unidad.tag]['costo_total'] += cruce.costo
             grouped_units[cruce.unidad.tag]['unidad'] = cruce.unidad.numero
-            grouped_units[cruce.unidad.tag]['cruces'].append(OrdenCasetaSerializer(cruce).data)
+            grouped_units[cruce.unidad.tag]['cruces'].append(CruceSerializer(cruce).data)
 
         grouped_units = [{'tag': key, 'costo_total': value['costo_total'], 'cruces': value['cruces'], 'unidad': value['unidad']} for key, value in grouped_units.items()]
         grouped_units = sorted(grouped_units, key=lambda x: x['costo_total'], reverse=True)
@@ -195,7 +195,7 @@ class CrucesByOrderView(views.APIView):
             if numero not in grouped_orders:
                 grouped_orders[numero] = { 'costo_total': 0, 'cruces': []}
             grouped_orders[numero]['costo_total'] += cruce.costo
-            grouped_orders[numero]['cruces'].append(OrdenCasetaSerializer(cruce).data)
+            grouped_orders[numero]['cruces'].append(CruceSerializer(cruce).data)
 
         grouped_orders = [{'numero': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_orders.items()]
         grouped_orders = sorted(grouped_orders, key=lambda x: x['costo_total'], reverse=True)
@@ -218,7 +218,7 @@ class CrucesByCasetaView(views.APIView):
             if nombre not in grouped_casetas:
                 grouped_casetas[nombre] = { 'costo_total': 0, 'cruces': []}
             grouped_casetas[nombre]['costo_total'] += cruce.costo
-            grouped_casetas[nombre]['cruces'].append(OrdenCasetaSerializer(cruce).data)
+            grouped_casetas[nombre]['cruces'].append(CruceSerializer(cruce).data)
 
         grouped_casetas = [{'nombre': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_casetas.items()]
         grouped_casetas = sorted(grouped_casetas, key=lambda x: x['costo_total'], reverse=True)
