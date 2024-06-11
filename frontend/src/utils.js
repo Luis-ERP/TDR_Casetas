@@ -34,3 +34,19 @@ export function replaceUrlVariables(route, values) {
 	}
 	return result;
 }
+
+export function safeRoundNumber(number) {
+	// for numbers larger than 1 thousand return k (for thousand), M (for million) format
+	if (number >= 1000 && number < 1000000)
+		return `${Math.round(number / 1000)}k`;
+	else if (number >= 1000000)
+		return `${Math.round(number / 1000000)}M`;
+	return number;
+}
+
+export const calculateStatistics = (values) => {
+    const n = values.length;
+    const mu = values.reduce((sum, value) => sum + value, 0) / n;
+    const sd = Math.sqrt(values.reduce((sum, value) => sum + Math.pow(value - mu, 2), 0) / n);
+    return { mu, sd, n };
+};

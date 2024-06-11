@@ -1,4 +1,4 @@
-import { ResponsiveBar } from '@nivo/bar'
+import { ResponsiveBar } from '@nivo/bar';
 
 export default function StackedBarChart({
         data, 
@@ -8,6 +8,8 @@ export default function StackedBarChart({
         yLabel='',
         yAxisEnabled=true,
         labelsEnabled=true, 
+        colors="#163253",
+        label=()=>{},
         onClick=()=>{},
     }) {
     return (
@@ -15,11 +17,11 @@ export default function StackedBarChart({
         data={data}
         keys={keys}
         indexBy={indexBy}
-        margin={{ top: 10, right: 130, bottom: 50, left: 60 }}
-        padding={0.3}
+        margin={{ top: 10, right: 130, bottom: 50, left: 10 }}
+        padding={0.15}
         valueScale={{ type: 'linear' }}
         indexScale={{ type: 'band', round: true }}
-        colors="#163355"
+        colors={colors}
         borderRadius={3}
         borderColor={{ theme: 'labels.text.fill' }}
         valueFormat=" >-$,"
@@ -45,7 +47,8 @@ export default function StackedBarChart({
             truncateTickAt: 100
         } : null}
         enableLabel={labelsEnabled}
-        labelSkipWidth={12}
+        label={label}
+        labelSkipWidth={2}
         labelSkipHeight={12}
         labelTextColor="#ffffff"
         legends={[
@@ -56,6 +59,7 @@ export default function StackedBarChart({
                 justify: false,
                 translateX: 120,
                 translateY: 0,
+                tickRotation: 90,
                 itemsSpacing: 2,
                 itemWidth: 100,
                 itemHeight: 20,
@@ -75,6 +79,7 @@ export default function StackedBarChart({
         role="application"
         ariaLabel="Nivo bar chart demo"
         barAriaLabel={e=>e.id+": "+e.formattedValue+" in country: "+e.indexValue}
+        groupMode="grouped"
         />
     );
 }

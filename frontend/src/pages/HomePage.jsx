@@ -9,6 +9,7 @@ import {
     Label, 
     Row,
     Table,
+    Spinner
 } from 'reactstrap';
 import { 
     getCruces, 
@@ -17,8 +18,10 @@ import {
     getCrucesByCaseta 
 } from '../client/cruces';
 import { CSVLink } from "react-csv";
-import { IoDownload } from "react-icons/io5";
+import { IoDownload, IoWarning } from "react-icons/io5";
 import StackedBarChart from '../components/widgets/StackedBarChart';
+import DescriptiveChart from '../components/widgets/DescriptiveChart';
+import { safeRoundNumber, calculateStatistics } from '../utils';
 import '../styles/homepage.scss';
 
 const monthsMapping = {
@@ -61,7 +64,8 @@ export default function HomePage(props) {
             const crucesByMonth = data.map(value => {
                 return {
                     mes: monthsMapping[value.month],
-                    costo: value.costo_total
+                    'costo real': value.costo_total,
+                    'costo esperado': value.costo_esperado
                 };
             });
             setCrucesByMonth(crucesByMonth);
@@ -105,12 +109,14 @@ export default function HomePage(props) {
         getCrucesByUnidad({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
             const averageCost = parseInt(data.reduce((acc, value) => acc + value.costo_total, 0) / data.length);
-            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
+            const averageExpected = parseInt(data.reduce((acc, value) => acc + value.costo_esperado, 0) / data.length);
+            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces, 0) / data.length);
             const averageRow = {
                 tag: 'average',
                 unidad: 'Promedio',
-                cruces: new Array(averageCruces),
-                costo_total: averageCost
+                costo_total: averageCost,
+                costo_esperado: averageExpected,
+                cruces: averageCruces,
             };
             data.push(averageRow);
             const sortedData = data.sort((a, b) => b.costo_total - a.costo_total);
@@ -147,6 +153,25 @@ export default function HomePage(props) {
 
     }, [selectedPeriod]);
 
+    const transformData = (data) => {
+        const totalCostStats = calculateStatistics(data.map(e => e.costo_total));
+        const totalCostRows = data.map(entry => ({
+            group: 'Costo',
+            subgroup: 'Costo real',
+            value: entry.costo_total,
+            ...totalCostStats
+        }));
+        
+        const expectedCostStats = calculateStatistics(data.map(e => e.costo_esperado));
+        const expectedCostRows = data.map(entry => ({
+            group: 'Costo',
+            subgroup: 'Costo esperado',
+            value: entry.costo_esperado,
+            ...expectedCostStats
+        }));
+        return [...totalCostRows, ...expectedCostRows];
+    };    
+
     return (
         <Container className='home-page'>
             <Row className='mb-3'>
@@ -169,20 +194,34 @@ export default function HomePage(props) {
                     </div>
                 </Col>
             </Row>
+
+            <Row>
+                <Col>
+                    <p>Selecciona una de las barras para ver los detalles de los costos por semana, unidad, orden y económico.</p>
+                </Col>
+            </Row>
             
             <Row>
                 <Col>
                     <Card className='costs-per-month-card'>
                         <CardBody>
-                            <StackedBarChart 
-                                data={crucesByMonth}
-                                keys={['costo']}
-                                indexBy='mes'
-                                xLabel='Mes'
-                                yLabel='Costo'
-                                yAxisEnabled={false}
-                                onClick={e => setSelectedPeriod(e.data.mes)}
-                            />
+                            {crucesByMonth.length === 0 
+                                ? <div className='d-flex align-items-center justify-content-center' style={{ height: '100%' }}>
+                                    <Spinner color="primary"/>
+                                  </div>
+                                : <StackedBarChart 
+                                    data={crucesByMonth}
+                                    keys={['costo real', 'costo esperado']}
+                                    indexBy='mes'
+                                    xLabel='Mes'
+                                    yLabel='Costo'
+                                    yAxisEnabled={false}
+                                    enableLabel={false}
+                                    colors={({ id }) => id === 'costo esperado' ? '#e5c01e' : '#163355'}
+                                    labelsEnabled={true}
+                                    label={label => `$${safeRoundNumber(label.data[label.id])}`}
+                                    onClick={e => setSelectedPeriod(e.data.mes)}
+                                    />}
                         </CardBody>
                     </Card>
                 </Col>
@@ -192,7 +231,11 @@ export default function HomePage(props) {
                 <Col>
                     <Card className='costs-per-week-card'>
                         <CardBody>
-                            <StackedBarChart 
+                            {crucesByWeek.length === 0 
+                                ? <div className='d-flex align-items-center justify-content-center' style={{ height: '100%' }}>
+                                    <Spinner color="primary"/>
+                                  </div>
+                                : <StackedBarChart 
                                 data={crucesByWeek}
                                 keys={['costo']}
                                 indexBy='semana'
@@ -201,7 +244,7 @@ export default function HomePage(props) {
                                 yAxisEnabled={false}
                                 labelsEnabled={false}
                                 onClick={e => setSelectedPeriod(e.data.semana)}
-                            />
+                                />}
                         </CardBody>
                     </Card>
                 </Col>
@@ -216,7 +259,7 @@ export default function HomePage(props) {
                                 <p className='d-inline'>({selectedPeriod})</p>
                             </span>
                             <CSVLink
-                            data={units.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                            data={units.map(unit => ({ ...unit, cruces: unit.cruces }))}
                             headers={[
                                 { label: "Unidad", key: "unidad" },
                                 { label: "Tag", key: "tag" },
@@ -232,6 +275,10 @@ export default function HomePage(props) {
                             </CSVLink>
                         </CardHeader>
                         <CardBody>
+                            <div style={{ height: '200px' }}>
+                                <DescriptiveChart data={transformData(units)} />
+                            </div>
+                            
                             <Table>
                                 <thead>
                                     <tr>
@@ -243,8 +290,13 @@ export default function HomePage(props) {
                                 <tbody>
                                     {units.map(unit => (
                                         <tr key={unit.tag}>
-                                            <td className={unit.tag==='average'? 'promedio':''}>{unit.unidad}</td>
-                                            <td className={unit.tag==='average'? 'promedio':''}>{unit.cruces.length || 0}</td>
+                                            <td className={unit.tag==='average'? 'promedio':''}>
+                                                {unit.diferencia && unit.diferencia > 100 && 
+                                                    <IoWarning style={{ color: '#fec52e', marginRight: '0.5rem' }} />
+                                                }
+                                                {unit.unidad}
+                                            </td>
+                                            <td className={unit.tag==='average'? 'promedio':''}>{unit.cruces || 0}</td>
                                             <td className={unit.tag==='average'? 'promedio':''}>$ {unit.costo_total}</td>
                                         </tr>
                                     ))}
@@ -277,6 +329,9 @@ export default function HomePage(props) {
                             </CSVLink>
                         </CardHeader>
                         <CardBody>
+                            <div style={{ height: '200px' }}>
+                                <DescriptiveChart data={transformData(orders)} />
+                            </div>
                             <Table>
                                 <thead>
                                     <tr>
@@ -322,6 +377,9 @@ export default function HomePage(props) {
                             </CSVLink>
                         </CardHeader>
                         <CardBody>
+                            <div style={{ height: '200px' }}>
+                                <DescriptiveChart data={transformData(units)} />
+                            </div>
                             <Table>
                                 <thead>
                                     <tr>

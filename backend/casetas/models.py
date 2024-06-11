@@ -67,6 +67,34 @@ class Cruce(models.Model):
     @property
     def diferencia(self):
         return self.costo - self.costo_esperado
+    
+    @staticmethod
+    def get_costo_total(cruce_qs, group_by='month'):
+        grouped_data = {}
+
+        if group_by == 'month':
+            for i in range(1, 13):
+                grouped_data[str(i).zfill(2)] = {'costo_total': 0, 'cruces': 0}
+                def get_period_label(date):
+                    return date.strftime('%m').zfill(2)
+        elif group_by == 'day':
+            for i in range(1, 32):
+                grouped_data[str(i).zfill(2)] = {'costo_total': 0, 'cruces': 0}
+                def get_period_label(date):
+                    return date.strftime('%d').zfill(2)
+        elif group_by == 'week':
+            for i in range(1, 53):
+                grouped_data[str(i).zfill(2)] = {'costo_total': 0, 'cruces': 0}
+                def get_period_label(date):
+                    return date.strftime('%V').zfill(2)
+
+        for cruce in cruce_qs:
+            date = cruce.fecha
+            period = get_period_label(date)
+            grouped_data[period]['costo_total'] += cruce.costo
+            grouped_data[period]['cruces'] = grouped_data[period].get('cruces', 0) + 1
+
+        return grouped_data
 
     def __str__(self) -> str:
         return f'{self.caseta} - {self.orden} ({self.id})'
@@ -106,6 +134,33 @@ class Orden(models.Model):
     @property
     def diferencia(self):
         return self.costo_total - self.costo_esperado
+    
+    @staticmethod
+    def get_costo_total_esperado(orden_qs, group_by='month'):
+        grouped_data = {}
+
+        if group_by == 'month':
+            for i in range(1, 13):
+                grouped_data[str(i).zfill(2)] = {'costo_esperado': 0}
+                def get_period_label(date):
+                    return date.strftime('%m').zfill(2)
+        elif group_by == 'day':
+            for i in range(1, 32):
+                grouped_data[str(i).zfill(2)] = {'costo_esperado': 0}
+                def get_period_label(date):
+                    return date.strftime('%d').zfill(2)
+        elif group_by == 'week':
+            for i in range(1, 53):
+                grouped_data[str(i).zfill(2)] = {'costo_esperado': 0}
+                def get_period_label(date):
+                    return date.strftime('%V').zfill(2)
+
+        for order in orden_qs:
+            date = order.fecha_inicio
+            period = get_period_label(date)
+            grouped_data[period]['costo_esperado'] += order.costo_esperado
+
+        return grouped_data
 
     def __str__(self) -> str:
         return f'{self.numero} ({self.id})'

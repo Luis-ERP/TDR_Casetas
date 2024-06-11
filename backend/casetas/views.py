@@ -98,62 +98,43 @@ class CrucesView(views.APIView):
         unidad = params.get('tag')
         orden = params.get('orden')
 
-        qs_params = {}
+        cruces_qs_params = {}
+        orders_qs_params = {}
         if start_dt and end_dt:
-            qs_params['fecha__gte'] = start_dt
-            qs_params['fecha__lt'] = end_dt
+            cruces_qs_params['fecha__gte'] = start_dt
+            cruces_qs_params['fecha__lt'] = end_dt
+            orders_qs_params['fecha_inicio__gte'] = start_dt
+            orders_qs_params['fecha_inicio__lt'] = end_dt
         elif unidad:
-            qs_params['unidad__tag'] = unidad
+            cruces_qs_params['unidad__tag'] = unidad
+            orders_qs_params['unidad__tag'] = unidad
         elif orden:
-            qs_params['orden__numero'] = orden
+            cruces_qs_params['orden__numero'] = orden
+            orders_qs_params['numero'] = orden
         else:
             return Response({ "error": "Missing query parameters" }, status=status.HTTP_400_BAD_REQUEST)
         
-        cruces = Cruce.objects.filter(**qs_params)
+        cruces = Cruce.objects.filter(**cruces_qs_params)
         serialized_cruces = CruceSerializer(cruces, many=True).data
         response_data = serialized_cruces
-
+        
         if "group_by" in params:
             group_by = params.get("group_by")
-            if group_by == "month":
-                grouped_data = {}
-                for cruce in serialized_cruces:
-                    date = datetime.fromisoformat(cruce['fecha'].replace('Z', ''))
-                    month = date.strftime('%m')
-                    if month not in grouped_data:
-                        grouped_data[month] = { 'costo_total': 0, 'cruces': [] }
-                    grouped_data[month]['costo_total'] += cruce['costo']
-                    grouped_data[month]['cruces'].append(cruce)
+            grouped_data = {}
+            orders = Orden.objects.filter(**orders_qs_params)
+            cruces_grouped = Cruce.get_costo_total(cruces, group_by=group_by)
+            orders_grouped = Orden.get_costo_total_esperado(orders, group_by=group_by)
+            for key in cruces_grouped:
+                grouped_data[key] = {
+                    group_by: key,
+                    'costo_total': cruces_grouped[key]['costo_total'],
+                    'costo_esperado': orders_grouped[key]['costo_esperado'],
+                    'diferencia_total': cruces_grouped[key]['costo_total'] - orders_grouped[key]['costo_esperado'],
+                    'cruces': cruces_grouped[key]['cruces'],
+                }
 
-                # Fill the missing months with costo_total=0 and cruces=0
-                for month in range(1, 13):
-                    month_str = str(month).zfill(2)
-                    if month_str not in grouped_data:
-                        grouped_data[month_str] = { 'costo_total': 0, 'cruces': [] }
-
-                grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
-                grouped_data = [{'month': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
-                response_data = grouped_data
-
-            elif group_by == "week":
-                grouped_data = {}
-                for cruce in serialized_cruces:
-                    date = datetime.fromisoformat(cruce['fecha'].replace('Z', ''))
-                    week = date.strftime('%V')
-                    if week not in grouped_data:
-                        grouped_data[week] = { 'costo_total': 0, 'cruces': [] }
-                    grouped_data[week]['costo_total'] += cruce['costo']
-                    grouped_data[week]['cruces'].append(cruce)
-
-                # Fill the missing weeks with costo_total=0 and cruces=0
-                for week in range(1, 53):
-                    week_str = str(week).zfill(2)
-                    if week_str not in grouped_data:
-                        grouped_data[week_str] = { 'costo_total': 0, 'cruces': [] }
-                
-                grouped_data = dict(sorted(grouped_data.items(), key=lambda item: item[0]))
-                grouped_data = [{'week': key, 'costo_total': value['costo_total'], 'cruces': value['cruces']} for key, value in grouped_data.items()]
-                response_data = grouped_data
+            grouped_data = sorted(grouped_data.values(), key=lambda x: x[group_by])
+            response_data = grouped_data
 
         return Response(response_data, status=status.HTTP_200_OK)
 
@@ -169,13 +150,21 @@ class CrucesByUnitView(views.APIView):
         for cruce in cruces:
             cruce.unidad.tag = cruce.unidad.tag if cruce.unidad.tag else 'Sin tag'
             if cruce.unidad.tag not in grouped_units:
-                grouped_units[cruce.unidad.tag] = { 'costo_total': 0, 'cruces': [], 'unidad': None }
+                grouped_units[cruce.unidad.tag] = { 'costo_total': 0, 'cruces': 0, 'unidad': None }
             grouped_units[cruce.unidad.tag]['costo_total'] += cruce.costo
             grouped_units[cruce.unidad.tag]['unidad'] = cruce.unidad.numero
-            grouped_units[cruce.unidad.tag]['cruces'].append(CruceSerializer(cruce).data)
+            grouped_units[cruce.unidad.tag]['cruces'] += 1
 
-        grouped_units = [{'tag': key, 'costo_total': value['costo_total'], 'cruces': value['cruces'], 'unidad': value['unidad']} for key, value in grouped_units.items()]
-        grouped_units = sorted(grouped_units, key=lambda x: x['costo_total'], reverse=True)
+        # Agregar el costo esperado sacando las ordenes de la unidad
+        for tag, grouped_unit in grouped_units.items():
+            unidad = Unidad.objects.get(numero=grouped_unit['unidad'])
+            ordenes = Orden.objects.filter(unidad=unidad, fecha_inicio__gte=start_dt, fecha_inicio__lt=end_dt)
+            costo_esperado = functools.reduce(lambda x, y: x + y.costo_esperado, ordenes, 0)
+            grouped_units[tag]['costo_esperado'] = costo_esperado
+            grouped_units[tag]['diferencia'] = grouped_unit['costo_total'] - costo_esperado
+            grouped_units[tag]['tag'] = tag
+
+        grouped_units = sorted(grouped_units.values(), key=lambda x: x['costo_total'], reverse=True)
         return Response(grouped_units, status=status.HTTP_200_OK)
     
 
