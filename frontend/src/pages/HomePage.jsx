@@ -126,11 +126,13 @@ export default function HomePage(props) {
         getCrucesByOrden({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
             const averageCost = parseInt(data.reduce((acc, value) => acc + value.costo_total, 0) / data.length);
-            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
+            const averageExpected = parseInt(data.reduce((acc, value) => acc + value.costo_esperado, 0) / data.length);
+            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces, 0) / data.length);
             const averageRow = {
                 numero: 'Promedio',
                 costo_total: averageCost,
-                cruces: new Array(averageCruces),
+                costo_esperado: averageExpected,
+                cruces: averageCruces,
             };
             data.push(averageRow);
             const sortedData = data.sort((a, b) => b.costo_total - a.costo_total);
@@ -140,11 +142,13 @@ export default function HomePage(props) {
         getCrucesByCaseta({ 'start_dt': start.toISOString(), 'end_dt': end.toISOString() })
         .then((data) => {
             const averageCost = parseInt(data.reduce((acc, value) => acc + value.costo_total, 0) / data.length);
-            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces.length, 0) / data.length);
+            const averageExpected = parseInt(data.reduce((acc, value) => acc + value.costo_esperado, 0) / data.length);
+            const averageCruces = parseInt(data.reduce((acc, value) => acc + value.cruces, 0) / data.length);
             const averageRow = {
                 nombre: 'Promedio',
                 costo_total: averageCost,
-                cruces: new Array(averageCruces),
+                costo_esperado: averageExpected,
+                cruces: averageCruces,
             };
             data.push(averageRow);
             const sortedData = data.sort((a, b) => b.costo_total - a.costo_total);
@@ -259,12 +263,13 @@ export default function HomePage(props) {
                                 <p className='d-inline'>({selectedPeriod})</p>
                             </span>
                             <CSVLink
-                            data={units.map(unit => ({ ...unit, cruces: unit.cruces }))}
+                            data={units}
                             headers={[
                                 { label: "Unidad", key: "unidad" },
                                 { label: "Tag", key: "tag" },
                                 { label: "Cruces", key: "cruces" },
-                                { label: "Costo total", key: "costo_total" }
+                                { label: "Costo total", key: "costo_total" },
+                                { label: "Costo esperado", key: "costo_esperado" }
                             ]}
                             filename={`económicos.csv`}
                             className="btn btn-primary">
@@ -314,11 +319,12 @@ export default function HomePage(props) {
                                 <p className='d-inline'>({selectedPeriod})</p>
                             </span>
                             <CSVLink
-                            data={orders.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                            data={orders}
                             headers={[
                                 { label: "Orden", key: "numero" },
                                 { label: "Cruces", key: "cruces" },
-                                { label: "Costo total", key: "costo_total" }
+                                { label: "Costo total", key: "costo_total" },
+                                { label: "Costo esperado", key: "costo_esperado" }
                             ]}
                             filename={`ordenes.csv`}
                             className="btn btn-primary">
@@ -343,8 +349,13 @@ export default function HomePage(props) {
                                 <tbody>
                                     {orders.map((order, i) => (
                                         <tr key={i}>
-                                            <td className={order.numero==='Promedio'? 'promedio':''}>{order.numero}</td>
-                                            <td className={order.numero==='Promedio'? 'promedio':''}>{order.cruces.length || 0}</td>
+                                            <td className={order.numero==='Promedio'? 'promedio':''}>
+                                                {order.diferencia && order.diferencia > 100 && 
+                                                    <IoWarning style={{ color: '#fec52e', marginRight: '0.5rem' }} />
+                                                }
+                                                {order.numero}
+                                            </td>
+                                            <td className={order.numero==='Promedio'? 'promedio':''}>{order.cruces || 0}</td>
                                             <td className={order.numero==='Promedio'? 'promedio':''}>$ {order.costo_total}</td>
                                         </tr>
                                     ))}
@@ -362,7 +373,7 @@ export default function HomePage(props) {
                                 <p className='d-inline'>({selectedPeriod})</p>
                             </span>
                             <CSVLink
-                            data={casetas.map(unit => ({ ...unit, cruces: unit.cruces.length }))}
+                            data={casetas}
                             headers={[
                                 { label: "Caseta", key: "nombre" },
                                 { label: "Cruces", key: "cruces" },
@@ -378,7 +389,7 @@ export default function HomePage(props) {
                         </CardHeader>
                         <CardBody>
                             <div style={{ height: '200px' }}>
-                                <DescriptiveChart data={transformData(units)} />
+                                <DescriptiveChart data={transformData(casetas)} />
                             </div>
                             <Table>
                                 <thead>
@@ -391,8 +402,13 @@ export default function HomePage(props) {
                                 <tbody>
                                     {casetas.map((caseta, i) => (
                                         <tr key={i}>
-                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.nombre}</td>
-                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.cruces.length || 0}</td>
+                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>
+                                                {caseta.diferencia && caseta.diferencia > 100 && 
+                                                    <IoWarning style={{ color: '#fec52e', marginRight: '0.5rem' }} />
+                                                }
+                                                {caseta.nombre}
+                                            </td>
+                                            <td className={caseta.nombre==='Promedio'? 'promedio':''}>{caseta.cruces || 0}</td>
                                             <td className={caseta.nombre==='Promedio'? 'promedio':''}>$ {caseta.costo_total}</td>
                                         </tr>
                                     ))}

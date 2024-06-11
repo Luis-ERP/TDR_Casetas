@@ -5,7 +5,6 @@ export default function DescriptiveChart({
     data,
     layout = 'horizontal',
 }) {
-    console.log(data);
     return (
         <ResponsiveBoxPlot
             data={data}
@@ -35,7 +34,7 @@ export default function DescriptiveChart({
                 tickSize: 5,
                 tickPadding: 5,
                 tickRotation: 0,
-                legend: 'group',
+                legend: '',
                 legendPosition: 'middle',
                 legendOffset: 32,
                 truncateTickAt: 0
