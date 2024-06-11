@@ -1,8 +1,7 @@
 from django.db import models, transaction
-from datetime import timedelta, datetime
-import pandas as pd
+from datetime import datetime
 
-# Create your models here.
+
 class Lugar(models.Model):
     nombre = models.CharField(max_length=256, null=True, blank=True)
     estado = models.CharField(max_length=256, null=True, blank=True)
@@ -161,6 +160,60 @@ class Orden(models.Model):
             grouped_data[period]['costo_esperado'] += order.costo_esperado
 
         return grouped_data
+
+    @staticmethod
+    def import_from_raw_data(df):
+        orders = []
+        with transaction.atomic():
+            new_orders = []
+            for index, row in df.iterrows():
+                numero = row['ord_number']
+                orden = Orden.objects.filter(numero=numero).first()
+                if orden:
+                    continue
+
+                lugar_origen, created = Lugar.objects.get_or_create(nombre=row['origin_cmp_name'])
+                lugar_destino, created = Lugar.objects.get_or_create(nombre=row['dest_cmp_name'])
+                ruta = Ruta.objects.filter(
+                    lugar_origen=lugar_origen,
+                    lugar_destino=lugar_destino
+                ).first()
+
+                # Unidad
+                id_unidad = int(row['ord_tractor'])
+                unidad = Unidad.objects.filter(numero=id_unidad).first()
+                if not unidad:
+                    unidad = Unidad.objects.create(numero=id_unidad)
+
+                fecha = datetime.strptime(row['ord_startdate'], '%m/%d/%Y %H:%M:%S')
+                fecha_inicio = fecha
+                fecha_inicio = fecha_inicio.replace(hour=0, minute=0, second=0, microsecond=0)
+                fecha_fin = datetime.strptime(row['ord_completiondate'], '%m/%d/%Y %H:%M:%S')
+                fecha_fin = fecha_fin.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+                orden, created = Orden.objects.get_or_create(
+                    numero=numero,
+                    fecha=fecha,
+                    fecha_inicio=fecha_inicio,
+                    fecha_fin=fecha_fin,
+                    lugar_origen=lugar_origen,
+                    lugar_destino=lugar_destino,
+                    unidad=unidad,
+                    ruta=ruta
+                )
+
+                # Buscar y asociar cruces de casetas
+                cruces = Cruce.objects.filter(
+                    fecha__gte=fecha_inicio,
+                    fecha__lte=fecha_fin,
+                    unidad=unidad,
+                    orden__isnull=True
+                )
+                print(f'Orden {orden} - {cruces.count()} cruces')
+                cruces.update(orden=orden)
+                new_orders.append(orden)
+            orders = new_orders
+        return orders
 
     def __str__(self) -> str:
         return f'{self.numero} ({self.id})'

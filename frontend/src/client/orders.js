@@ -14,3 +14,8 @@ export async function getOrders(params = {}) {
         return null;
     }
 }
+
+export async function createRawOrder(data) {
+    const response = await axios.post(`${baseURL}/casetas/ordenes/raw/`, data);
+    return response.data;
+}

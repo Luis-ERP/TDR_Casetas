@@ -12,12 +12,15 @@ import {
     Button, 
     Form 
 } from 'reactstrap';
+import { IoCloudUpload } from "react-icons/io5";
 import { getCruces } from '../client/cruces';
+import UploadOrdersModal from '../modals/UploadOrdersModal';
 
 
 export default function OrdersPage(props) {
 	const [order, setOrder] = useState();
     const [cruces, setCruces] = useState();
+    const [isUploadOrdersModalOpen, setIsUploadOrdersModalOpen] = useState(false);
 
     const onSubmitSearchOrder = (event) => {
 		event.preventDefault();
@@ -56,6 +59,15 @@ export default function OrdersPage(props) {
                                 <h4>
                                     Información por orden
                                 </h4>
+                            </Col>
+                            <Col className='d-flex justify-content-end'>
+                                <Button
+                                    color='primary'
+                                    onClick={() => setIsUploadOrdersModalOpen(true)}
+                                >
+                                    <IoCloudUpload className='m-2' />
+                                    <span>Importar órdenes</span>
+                                </Button>
                             </Col>
                         </Row>
                         <Form onSubmit={onSubmitSearchOrder}>
@@ -153,6 +165,11 @@ export default function OrdersPage(props) {
                 </Card>
             </Col>
         </Row>
+
+        <UploadOrdersModal
+            isOpen={isUploadOrdersModalOpen}
+            toggle={() => setIsUploadOrdersModalOpen(!isUploadOrdersModalOpen)}
+        />
 
     </Container>
     )

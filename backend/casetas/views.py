@@ -1,5 +1,6 @@
 from rest_framework import viewsets, views, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.db import models
 from django.db.models import Q
 import functools
@@ -16,7 +17,7 @@ from casetas.serializers import (OrdenSerializer,
 from casetas.utils import parse_query_params
 from casetas.mixins import GetQuerysetMixin
 from casetas.client.televia import TeleviaAPI
-from datetime import datetime
+import pandas as pd
 
 
 class OrderViewset(viewsets.ModelViewSet, GetQuerysetMixin):
@@ -28,6 +29,27 @@ class OrderViewset(viewsets.ModelViewSet, GetQuerysetMixin):
         serializer = self.serializer_class(qs)
         return Response(serializer.data)
     
+    @action(detail=False, methods=['post'], url_path='raw', url_name='raw')
+    def create_raw(self, request):
+        data = request.data
+        df = pd.DataFrame(data[1:], columns=data[0])
+        df = df.replace('UNKNOWN', pd.NA)
+        # Filter all rows where column origin_cmp_name equals 'COLGATE ITURBIDE'
+        df = df[df['origin_cmp_name'] == 'COLGATE ITURBIDE']
+        rows_to_check_for_nan = [
+            'ord_number', 
+            'ord_tractor', 
+            'ord_startdate', 
+            'ord_completiondate', 
+            'origin_cmp_name', 
+            'dest_cmp_name']
+        nan_df = df[df[rows_to_check_for_nan].isna().any(axis=1)]
+        df = df.dropna(subset=rows_to_check_for_nan)
+        try:
+            Orden.import_from_raw_data(df)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Missing data in the following rows', 'rows': nan_df.to_dict(orient='records')}, status=status.HTTP_201_CREATED)
 
 class UnitViewset(viewsets.ModelViewSet, GetQuerysetMixin):
     queryset = Unidad.objects.all()
