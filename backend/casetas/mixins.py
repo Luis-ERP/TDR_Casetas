@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models import Q
-import functools
 from casetas.utils import parse_query_params
+import functools
 
 class GetQuerysetMixin:
     
