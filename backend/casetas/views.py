@@ -47,9 +47,11 @@ class OrderViewset(viewsets.ModelViewSet, GetQuerysetMixin):
         df = df.dropna(subset=rows_to_check_for_nan)
         try:
             Orden.import_from_raw_data(df)
+            Orden.objects.filter(ruta__isnull=True).delete()
         except Exception as e:
             return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({'message': 'Missing data in the following rows', 'rows': nan_df.to_dict(orient='records')}, status=status.HTTP_201_CREATED)
+
 
 class UnitViewset(viewsets.ModelViewSet, GetQuerysetMixin):
     queryset = Unidad.objects.all()
@@ -101,14 +103,13 @@ class LoginWithTeleviaView(views.APIView):
         data = request.data
         if 'username' not in data or 'password' not in data:
             return Response({'message': 'Invalid data'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            televia = TeleviaAPI()
+            token = televia.login(data['username'], data['password'])
+            return Response({'token': token}, status=status.HTTP_200_OK)
         
-        # televia = TeleviaAPI()
-        # televia.login(data['username'], data['password'])
-        # try:
-        # except Exception as e:
-        # return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({'message': 'Login with televia successful'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CrucesView(views.APIView):

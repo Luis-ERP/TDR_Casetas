@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Nav, NavItem, NavLink } from 'reactstrap';
-import { IoReorderThree, IoGrid, IoBarChart, IoBus, IoDocuments, IoCar, IoMap } from "react-icons/io5";
+import { IoReorderThree, IoGrid, IoLogOut, IoBus, IoDocuments, IoCar, IoMap } from "react-icons/io5";
+import useSession from '../hooks/useSession';
 import '../styles/sidebar.scss';
 
 export default function Sidebar({activeLink, setActiveLink}) {
     const [collapsed, setCollapsed] = useState(false);
+    const { logout } = useSession();
 
     return (
         <div className="sidebar d-flex flex-column" style={{ width: !collapsed ? '250px' : '85px' }}>
@@ -52,6 +54,13 @@ export default function Sidebar({activeLink, setActiveLink}) {
                     active={activeLink === 'rutas'} >
                         <IoMap />
                         <span style={{ display: !collapsed ? 'inline' : 'none' }}>Rutas</span>
+                    </NavLink>
+                </NavItem>
+                <NavItem style={{ height: '460px' }} />
+                <NavItem>
+                    <NavLink onClick={logout}>
+                        <IoLogOut />
+                        <span style={{ display: !collapsed ? 'inline' : 'none' }}>Cerrar sesión</span>
                     </NavLink>
                 </NavItem>
             </Nav>

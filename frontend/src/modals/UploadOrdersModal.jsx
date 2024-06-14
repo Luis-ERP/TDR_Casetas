@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Modal, ModalBody, ModalHeader, ModalFooter, Button } from "reactstrap";
 import Papa from "papaparse";
 import { createRawOrder } from "../client/orders";
+import Swal from "sweetalert2";
 
 export default function UploadOrdersModal({
     isOpen,
@@ -54,7 +55,13 @@ export default function UploadOrdersModal({
             setLoading(false);
             setFile(null);
             setError(null);
-            alert('Orders uploaded successfully');
+            // alert('Orders uploaded successfully');
+            Swal.fire({
+                title: 'Órdenes subidas',
+                text: 'Las órdenes se han subido exitosamente',
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+            });
         };
     };
     

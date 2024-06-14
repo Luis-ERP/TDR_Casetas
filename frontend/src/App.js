@@ -13,11 +13,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function App() {
 	const [page, setPage] = useState('inicio');
-	const { token } = useSession();
+	const { isAuthenticated } = useSession();
 
-	// if (!token) {
-	// 	return <LoginPage />;
-	// }
+	if (!isAuthenticated()) {
+		return <LoginPage />;
+	}
 
 	return (
 		<div className="App d-flex">

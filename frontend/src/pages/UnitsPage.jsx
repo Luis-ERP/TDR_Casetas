@@ -15,6 +15,8 @@ import { CSVLink } from "react-csv";
 import { useSearchParams } from "react-router-dom";
 import { getCrucesByUnidad } from "../client/cruces";
 import { getOrders } from "../client/orders";
+import { calculateStatistics } from '../utils';
+import DescriptiveChart from '../components/widgets/DescriptiveChart';
 
 
 export default function UnitsPage(props) {
@@ -192,7 +194,7 @@ export default function UnitsPage(props) {
                             </Row>
 
                             <Row>
-                                <Col md={12} lg={6}>
+                                <Col md={12} lg={8}>
                                     <Table
                                     hover
                                     responsive
@@ -203,7 +205,9 @@ export default function UnitsPage(props) {
                                                 <th>Unidad</th>
                                                 <th>Tag</th>
                                                 <th>Cruces</th>
-                                                <th>Costo total</th>
+                                                <th>Costo total esperado</th>
+                                                <th>Costo total real</th>
+                                                <th>Costo diferencia</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -214,15 +218,14 @@ export default function UnitsPage(props) {
                                                 className="cursor-pointer">
                                                     <td>{unit.unidad}</td>
                                                     <td>{unit.tag}</td>
-                                                    <td>{unit.cruces.length}</td>
+                                                    <td>{unit.cruces}</td>
+                                                    <td>$ {unit.costo_esperado}</td>
                                                     <td>$ {unit.costo_total}</td>
+                                                    <td>$ {unit.diferencia}</td>
                                                 </tr>
                                             ))}                                            
                                         </tbody>
                                     </Table>
-                                </Col>
-                                <Col md={12} lg={6}>
-                                    <p>Gráfica de estadística descriptiva</p>
                                 </Col>
                             </Row>
                         </CardBody>
@@ -236,9 +239,7 @@ export default function UnitsPage(props) {
                         <CardBody>
                             <Row className='mb-4 justify-content-between d-flex'>
                                 <Col>
-                                    <h4>
-                                        Buscar órdenes
-                                    </h4>
+                                    <h4>Buscar órdenes</h4>
                                 </Col>
                                 <Col className="d-flex justify-content-end">
                                     <CSVLink

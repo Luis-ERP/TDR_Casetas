@@ -9,16 +9,18 @@ import {
     Label, 
     Row,
     Table,
-    Spinner
+    Spinner,
+    Button
 } from 'reactstrap';
+import { CSVLink } from "react-csv";
+import { IoDownload, IoWarning, IoCloudUpload } from "react-icons/io5";
 import { 
     getCruces, 
     getCrucesByUnidad, 
     getCrucesByOrden,
     getCrucesByCaseta 
 } from '../client/cruces';
-import { CSVLink } from "react-csv";
-import { IoDownload, IoWarning } from "react-icons/io5";
+import UploadOrdersModal from '../modals/UploadOrdersModal';
 import StackedBarChart from '../components/widgets/StackedBarChart';
 import DescriptiveChart from '../components/widgets/DescriptiveChart';
 import { safeRoundNumber, calculateStatistics } from '../utils';
@@ -41,6 +43,7 @@ const monthsMapping = {
 
 
 export default function HomePage(props) {
+    const [isUploadOrdersModalOpen, setIsUploadOrdersModalOpen] = useState(false);
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [crucesByMonth, setCrucesByMonth] = useState([]);
     const [crucesByWeek, setCrucesByWeek] = useState([]);
@@ -197,6 +200,14 @@ export default function HomePage(props) {
                         </Input>
                     </div>
                 </Col>
+                <Col className='d-flex justify-content-end'>
+                    <Button
+                    color='primary'
+                    onClick={() => setIsUploadOrdersModalOpen(true)}>
+                        <IoCloudUpload className='m-2' />
+                        <span>Importar órdenes</span>
+                    </Button>
+                </Col>
             </Row>
 
             <Row>
@@ -219,7 +230,7 @@ export default function HomePage(props) {
                                     indexBy='mes'
                                     xLabel='Mes'
                                     yLabel='Costo'
-                                    yAxisEnabled={false}
+                                    yAxisEnabled={true}
                                     enableLabel={false}
                                     colors={({ id }) => id === 'costo esperado' ? '#e5c01e' : '#163355'}
                                     labelsEnabled={true}
@@ -245,7 +256,7 @@ export default function HomePage(props) {
                                 indexBy='semana'
                                 xLabel='Semana'
                                 yLabel='Costo'
-                                yAxisEnabled={false}
+                                yAxisEnabled={true}
                                 labelsEnabled={false}
                                 onClick={e => setSelectedPeriod(e.data.semana)}
                                 />}
@@ -418,6 +429,11 @@ export default function HomePage(props) {
                     </Card>
                 </Col>
             </Row>
+
+            <UploadOrdersModal
+            isOpen={isUploadOrdersModalOpen}
+            toggle={() => setIsUploadOrdersModalOpen(!isUploadOrdersModalOpen)}
+            />
         </Container>
     )
 }

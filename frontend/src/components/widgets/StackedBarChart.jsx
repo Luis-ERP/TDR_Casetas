@@ -17,7 +17,7 @@ export default function StackedBarChart({
         data={data}
         keys={keys}
         indexBy={indexBy}
-        margin={{ top: 10, right: 130, bottom: 50, left: 10 }}
+        margin={{ top: 10, right: 130, bottom: 50, left: 70 }}
         padding={0.15}
         valueScale={{ type: 'linear' }}
         indexScale={{ type: 'band', round: true }}
@@ -43,8 +43,8 @@ export default function StackedBarChart({
             tickRotation: 0,
             legend: yLabel,
             legendPosition: 'middle',
-            legendOffset: -40,
-            truncateTickAt: 100
+            legendOffset: -60,
+            truncateTickAt: 1000
         } : null}
         enableLabel={labelsEnabled}
         label={label}

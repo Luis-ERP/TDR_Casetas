@@ -3,28 +3,21 @@ import { login as loginAPI } from "../client/auth";
 
 export default function useSession() {
     const [token, setToken] = useState(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            setToken(token);
-            setLoading(false);
-        } else {
-            setLoading(false);
-        }
-    }, []);
-
-    const login = (token, user) => {
-        loginAPI();
+    const login = async (username, password) => {
+        const token = await loginAPI(username, password);
+        localStorage.setItem('televia_token', token);
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
-        setToken(null);
-        setUser(null);
+        localStorage.removeItem('televia_token');
+        window.location.reload();
     };
 
-    return { token, user, loading, login, logout };
+    const isAuthenticated = () => {
+        const token = localStorage.getItem('televia_token', null);
+        return token !== null;
+    };
+
+    return { login, logout, isAuthenticated };
 }
